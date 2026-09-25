@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <script>
+    // Base de la web: '/' en dominio propio; '/<repo>/' en GitHub Pages de proyecto.
+    (function () {
+      var b = '/', s = location.pathname.split('/')[1];
+      if (/\.github\.io$/.test(location.hostname) && s) b = '/' + s + '/';
+      window.VESCORA_BASE = b;
+      var el = document.createElement('base'); el.href = b; document.head.appendChild(el);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>VESCORA — Equipment for the wild · Equipamiento de pesca</title>
+  <meta name="description" content="VESCORA es una marca outdoor de equipamiento de pesca. Descubre señuelos, cañas, carretes, líneas y accesorios por técnica y por especie.">
+  <link rel="canonical" href="https://www.vescora.com/">
+  <meta name="theme-color" content="#131516">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="VESCORA">
+  <meta property="og:title" content="VESCORA — Equipment for the wild">
+  <meta property="og:description" content="Equipamiento para quienes encuentran su lugar fuera del camino.">
+  <meta property="og:image" content="assets/brand/lockup-orange-on-blue.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/brand/emblem-cream-on-blue.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600&family=Poppins:wght@700&display=swap">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <script type="application/ld+json" id="ld-org">{"@context":"https://schema.org","@type":"Organization","name":"VESCORA","slogan":"Equipment for the wild","url":"https://www.vescora.com/","logo":"https://www.vescora.com/assets/brand/lockup-orange-on-cream.jpg"}</script>
+  <script type="application/ld+json" id="ld-page"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+
+  <header class="header" id="header">
+    <div class="wrap header__in">
+      <a class="brand" href="./" aria-label="VESCORA, inicio">
+        <span class="brand__emblem" aria-hidden="true"></span>
+        <span class="brand__word">VESCORA</span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a href="equipamiento">Equipamiento</a>
+        <a href="tecnicas">Técnicas</a>
+        <a href="especies">Especies</a>
+        <a href="vescora">Vescora</a>
+        <a href="journal">Journal</a>
+        <a href="contacto">Contacto</a>
+      </nav>
+      <div class="header__tools">
+        <button class="icon-btn" type="button" data-open="search" aria-label="Buscar" aria-controls="search" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg>
+        </button>
+        <button class="icon-btn" type="button" data-open="menu" aria-label="Menú" aria-controls="menu" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M3 8h18M3 16h18"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="overlay menu" id="menu" role="dialog" aria-modal="true" aria-label="Menú" hidden></div>
+  <div class="overlay search" id="search" role="dialog" aria-modal="true" aria-label="Buscador" hidden></div>
+
+  <main id="main" tabindex="-1">
+    <noscript>
+      <div class="wrap page-head">
+        <h1 class="h1">VESCORA</h1>
+        <p class="lede">Equipamiento para quienes encuentran su lugar fuera del camino. Activa JavaScript para explorar el catálogo.</p>
+      </div>
+    </noscript>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <span class="brand__emblem" aria-hidden="true"></span>
+          <p class="footer__claim">Una marca outdoor. Una cultura de pesca. Una forma de explorar.</p>
+        </div>
+        <div class="footer__cols">
+          <div>
+            <h4>Vescora</h4>
+            <a href="vescora">Quiénes somos</a>
+            <a href="vescora/filosofia">Filosofía</a>
+            <a href="contacto">Contacto</a>
+          </div>
+          <div>
+            <h4>Equipamiento</h4>
+            <a href="equipamiento/senuelos">Señuelos</a>
+            <a href="equipamiento/canas">Cañas</a>
+            <a href="equipamiento/carretes">Carretes</a>
+            <a href="equipamiento/lineas">Líneas</a>
+            <a href="equipamiento/accesorios">Accesorios</a>
+          </div>
+          <div>
+            <h4>Descubre</h4>
+            <a href="tecnicas">Técnicas</a>
+            <a href="especies">Especies</a>
+            <a href="tu-equipo">Tu equipo</a>
+            <a href="journal">Journal</a>
+          </div>
+          <div>
+            <h4>Legal</h4>
+            <a href="legal/aviso-legal">Aviso legal</a>
+            <a href="legal/privacidad">Política de privacidad</a>
+            <a href="legal/cookies">Cookies</a>
+            <a href="legal/terminos">Términos y condiciones</a>
+            <a href="legal/propiedad-intelectual">Propiedad intelectual</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <span>© <span id="year">2026</span> VESCORA · Equipment for the wild</span>
+        <span>Catálogo e información. Las compras se realizan en plataformas externas.</span>
+      </div>
+      <div class="footer__word" aria-hidden="true">VESCORA</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/art.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

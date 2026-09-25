@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>VESCORA</title>
+  <meta name="robots" content="noindex">
+  <script>
+    // Hosting estático (GitHub Pages): redirige cualquier ruta a la app conservando la URL amigable.
+    (function () {
+      var l = location, b = '/', s = l.pathname.split('/')[1];
+      if (/\.github\.io$/.test(l.hostname) && s) b = '/' + s + '/';
+      var p = l.pathname.slice(b.length);
+      l.replace(b + '?p=' + encodeURIComponent(p + l.search) + l.hash);
+    })();
+  </script>
+</head>
+<body></body>
+</html>
