@@ -110,7 +110,7 @@
 
   const techniques = [
     {
-      id: 'spinning', name: 'Spinning', scene: 'coast',
+      id: 'spinning', name: 'Spinning', scene: 'coast', photo: 'assets/photos/tecnica-spinning.webp',
       claim: 'Una técnica versátil para buscar depredadores en diferentes escenarios.',
       type: 'Pesca activa con señuelos artificiales',
       scenario: 'Costa rocosa, playas, espigones y desembocaduras',
@@ -119,7 +119,7 @@
       tips: ['Empieza cubriendo agua con un minnow o un vinilo y ajusta el gramaje a la distancia y al oleaje.', 'Las horas de luz cambiante —amanecer y atardecer— suelen ser las más activas.', 'Varía el ritmo de recuperación antes de cambiar de señuelo.']
     },
     {
-      id: 'light-spinning', name: 'Light Spinning', scene: 'harbor',
+      id: 'light-spinning', name: 'Light Spinning', scene: 'harbor', photo: 'assets/photos/tecnica-light-spinning.webp',
       claim: 'Equipos ligeros, señuelos pequeños y mucha sensibilidad.',
       type: 'Spinning ligero con señuelos de 3 a 15 g',
       scenario: 'Puertos, espigones, calas y zonas abrigadas',
@@ -128,7 +128,7 @@
       tips: ['Un bajo de fluorocarbono fino marca la diferencia en aguas claras.', 'Las luces de los puertos concentran peces pasto y depredadores al anochecer.', 'Trabaja el fondo y la media agua antes de cambiar de zona.']
     },
     {
-      id: 'rockfishing', name: 'Rockfishing', scene: 'rock',
+      id: 'rockfishing', name: 'Rockfishing', scene: 'rock', photo: 'assets/photos/tecnica-rockfishing.jpg',
       claim: 'Pescar entre piedras, grieta a grieta.',
       type: 'Pesca ultraligera junto a la roca',
       scenario: 'Escolleras, bloques, pozas y bajos rocosos',
@@ -137,7 +137,7 @@
       tips: ['Deja caer el señuelo pegado a la pared y mantén contacto con la línea.', 'Una cabeza plomada ligera enroca menos que una pesada.', 'Mueve los pies: cada hueco se prueba con pocos lances.']
     },
     {
-      id: 'eging', name: 'Eging', scene: 'night',
+      id: 'eging', name: 'Eging', scene: 'night', photo: 'assets/photos/tecnica-eging.jpg',
       claim: 'El arte japonés de pescar calamares con egi.',
       type: 'Pesca de cefalópodos con egi',
       scenario: 'Puertos, escolleras y fondos de pradera',
@@ -146,7 +146,7 @@
       tips: ['Cuenta la caída para conocer la profundidad y no tocar fondo.', 'Colores naturales de día, colores vivos o luminiscentes de noche.', 'Tras la picada, mantén la tensión constante: el calamar no está anzuelado como un pez.']
     },
     {
-      id: 'surfcasting', name: 'Surfcasting', scene: 'beach',
+      id: 'surfcasting', name: 'Surfcasting', scene: 'beach', photo: 'assets/photos/tecnica-surfcasting.jpg',
       claim: 'Lances largos desde la orilla.',
       type: 'Pesca a fondo desde playa',
       scenario: 'Playas abiertas, desembocaduras y rompientes',
@@ -155,7 +155,7 @@
       tips: ['Un puente cónico protege la línea en el momento del lance.', 'Con mar de fondo, los peces se acercan a la primera y segunda rompiente.', 'Observa la playa con marea baja para localizar canales y hoyas.']
     },
     {
-      id: 'embarcacion', name: 'Pesca desde embarcación', scene: 'boat',
+      id: 'embarcacion', name: 'Pesca desde embarcación', scene: 'boat', photo: 'assets/photos/tecnica-embarcacion.jpg',
       claim: 'Llegar donde la orilla no alcanza.',
       type: 'Jigging, spinning y fondo desde barco o kayak',
       scenario: 'Bajos, veriles, cardúmenes y aguas profundas',
@@ -167,7 +167,7 @@
 
   const species = [
     {
-      id: 'lubina', name: 'Lubina', latin: 'Dicentrarchus labrax', scene: 'coast',
+      id: 'lubina', name: 'Lubina', latin: 'Dicentrarchus labrax', scene: 'coast', photo: 'assets/photos/especie-lubina.webp',
       claim: 'La reina del spinning costero.',
       intro: 'Depredador desconfiado y oportunista. Recorre la costa siguiendo al pasto y aprovecha la espuma, las corrientes y la baja luz para cazar cerca de la orilla.',
       techniques: ['spinning', 'light-spinning', 'rockfishing'],
@@ -181,7 +181,7 @@
       ]
     },
     {
-      id: 'jurel', name: 'Jurel', latin: 'Trachurus trachurus', scene: 'harbor',
+      id: 'jurel', name: 'Jurel', latin: 'Trachurus trachurus', scene: 'harbor', photo: 'assets/photos/especie-jurel.webp',
       claim: 'Pequeño, rápido y en bancos.',
       intro: 'Pez gregario que se mueve en bancos. Muy activo al atardecer y de noche bajo las luces de los puertos, perfecto para el light spinning.',
       techniques: ['light-spinning', 'rockfishing', 'embarcacion'],
@@ -195,7 +195,7 @@
       ]
     },
     {
-      id: 'dorada', name: 'Dorada', latin: 'Sparus aurata', scene: 'beach',
+      id: 'dorada', name: 'Dorada', latin: 'Sparus aurata', scene: 'beach', photo: 'assets/photos/especie-dorada.webp',
       claim: 'Fuerza y desconfianza en aguas someras.',
       intro: 'Espárido potente que se alimenta de moluscos y crustáceos. Se acerca a playas, estuarios y escolleras en busca de comida, sobre todo con aguas templadas.',
       techniques: ['surfcasting', 'embarcacion', 'light-spinning'],
@@ -209,7 +209,7 @@
       ]
     },
     {
-      id: 'anjova', name: 'Anjova', latin: 'Pomatomus saltatrix', scene: 'coast',
+      id: 'anjova', name: 'Anjova', latin: 'Pomatomus saltatrix', scene: 'coast', photo: 'assets/photos/especie-anjova.webp',
       claim: 'Velocidad, dientes y ataques violentos.',
       intro: 'Cazadora rápida y agresiva que persigue bancos de pasto en superficie. Sus dientes exigen un bajo resistente y señuelos robustos.',
       techniques: ['spinning', 'embarcacion'],
@@ -223,7 +223,7 @@
       ]
     },
     {
-      id: 'calamar', name: 'Calamar', latin: 'Loligo vulgaris', scene: 'night',
+      id: 'calamar', name: 'Calamar', latin: 'Loligo vulgaris', scene: 'night', photo: 'assets/photos/especie-calamar.webp',
       claim: 'El objetivo del eging.',
       intro: 'Cefalópodo que se acerca a la costa al caer la noche. Ataca presas en movimiento y suele hacerlo durante la caída de la egi.',
       techniques: ['eging', 'embarcacion'],
@@ -237,7 +237,7 @@
       ]
     },
     {
-      id: 'cefalopodos', name: 'Sepia y otros cefalópodos', latin: 'Sepia officinalis · Octopus vulgaris', scene: 'harbor',
+      id: 'cefalopodos', name: 'Sepia y otros cefalópodos', latin: 'Sepia officinalis · Octopus vulgaris', scene: 'harbor', photo: 'assets/photos/especie-cefalopodos.webp',
       claim: 'Pesca pausada, cerca del fondo.',
       intro: 'Sepias y pulpos viven pegados al fondo. Responden a egis y jibioneras trabajadas despacio, con pausas largas y contacto con el fondo.',
       techniques: ['eging', 'embarcacion'],
@@ -251,7 +251,7 @@
       ]
     },
     {
-      id: 'depredadores', name: 'Otros depredadores', latin: 'Serranos, cabrachos, palometas, bonitos…', scene: 'rock',
+      id: 'depredadores', name: 'Otros depredadores', latin: 'Serranos, cabrachos, palometas, bonitos…', scene: 'rock', photo: 'assets/photos/especie-depredadores.webp',
       claim: 'La costa está llena de cazadores.',
       intro: 'Serranos y cabrachos entre las piedras; palometas, bonitos y caballas en superficie. Cada uno tiene su técnica, pero todos responden a un señuelo bien presentado.',
       techniques: ['rockfishing', 'light-spinning', 'spinning', 'embarcacion'],
@@ -310,31 +310,28 @@
       related: ['jig-head-3', 'pe-x4-03', 'fluoro-025', 'caja-organizadora'],
       art: { k: 'pintail', c: ['#d7c98a', '#f1ecd4'] }, listings: { vinted: '' }
     }),
-    // ——— SEÑUELOS · MINNOWS
-    P({
-      id: 'drift-minnow-110f', name: 'Drift Minnow 110F', category: 'senuelos', sub: 'minnows', type: 'Minnow flotante',
-      length: '110 mm', weight: 16, featured: true,
-      summary: 'Nado amplio en la capa superficial.',
-      description: 'Minnow flotante con sistema de transferencia de pesos para lanzar lejos y nadar en cuanto toca el agua. Trabaja entre 30 y 90 cm, justo donde la lubina caza en la espuma.',
-      specs: { Tipo: 'Minnow flotante', Longitud: '110 mm', Peso: '16 g', Acción: 'Wobbling amplio', Material: 'ABS · anillas inox', Color: 'Sardina azul', Profundidad: '0,3 – 0,9 m' },
-      when: { Condiciones: 'Espuma, rompiente, baja luz', 'Tipo de agua': 'Con espuma o tomada', Profundidad: 'Superficie', Recuperación: 'Lineal lenta', Escenario: 'Costa rocosa y playa' },
-      techniques: ['spinning'], species: ['lubina', 'anjova'],
-      conditions: ['costa-rocosa', 'playa', 'estuario', 'oleaje', 'noche'],
-      related: ['grapa-rapida-1', 'fluoro-025', 'pe-x8-08', 'alicates-alu'],
-      art: { k: 'minnow', c: ['#2f5f86', '#e8ecef'] }, listings: { wallapop: '', vinted: '', miraanuncio: '' }
-    }),
-    P({
-      id: 'cast-minnow-90s', name: 'Cast Minnow 90S', category: 'senuelos', sub: 'minnows', type: 'Minnow hundido',
-      length: '90 mm', weight: 20,
+    // ——— SEÑUELOS · MINNOWS — Minnow Kingdom 105S (6 colores, misma ficha técnica)
+    ...[
+      ['plata-holo', 'Plata Holo', ['#9aa4b4', '#e6e9ee'], true, { wallapop: '', vinted: '', miraanuncio: '' }],
+      ['lomo-rosa', 'Lomo Rosa', ['#c2185b', '#e3e3e6'], false, { wallapop: '', vinted: '' }],
+      ['cabeza-roja', 'Cabeza Roja', ['#7c8a9a', '#e9d36a'], false, { wallapop: '', vinted: '' }],
+      ['plata-espejo', 'Plata Espejo', ['#3c4046', '#d9dde2'], false, { wallapop: '' }],
+      ['oro-rojo', 'Oro Rojo', ['#6f747a', '#b3262d'], false, { wallapop: '', vinted: '' }],
+      ['sardina-azul', 'Sardina Azul', ['#1f3f8f', '#e3e6ea'], true, { wallapop: '', vinted: '' }]
+    ].map(([slug, color, c, featured, listings]) => P({
+      id: `minnow-kingdom-105s-${slug}`, name: `Minnow Kingdom 105S ${color}`, family: 'minnow-kingdom-105s', color,
+      category: 'senuelos', sub: 'minnows', type: 'Minnow Kingdom hundido',
+      length: '10,5 cm', weight: 18.6, featured,
+      photo: `assets/photos/minnow-kingdom-105s-${slug}.webp`,
       summary: 'Compacto, pesado y fácil de lanzar contra el viento.',
       description: 'Minnow hundido de perfil compacto. Alcanza distancia con viento de cara y permite contar la caída para pescar a distintas profundidades.',
-      specs: { Tipo: 'Minnow hundido', Longitud: '90 mm', Peso: '20 g', Acción: 'Rolling cerrado', Material: 'ABS · anillas inox', Color: 'Caballa', Profundidad: '0,5 – 3 m' },
+      specs: { Tipo: 'Minnow Kingdom hundido', Longitud: '10,5 cm', Peso: '18,6 g', Acción: 'Rolling cerrado', Material: 'ABS · anillas inox', Color: color, Profundidad: '0,5 – 3 m' },
       when: { Condiciones: 'Viento, distancia', 'Tipo de agua': 'Clara o movida', Profundidad: 'Media agua', Recuperación: 'Lineal o con paradas', Escenario: 'Puntas, playas, embarcación' },
       techniques: ['spinning', 'embarcacion'], species: ['lubina', 'anjova', 'jurel', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'embarcacion', 'oleaje'],
-      related: ['grapa-rapida-1', 'fluoro-025', 'giratorio-rolling'],
-      art: { k: 'minnow', c: ['#3f6b4f', '#e7eadf'], stripes: true }, listings: { wallapop: '' }
-    }),
+      related: ['grapa-rapida-1', 'fluoro-025', 'giratorio-rolling', 'pe-x8-08', 'alicates-alu'],
+      art: { k: 'minnow', c }, listings
+    })),
     // ——— SEÑUELOS · PASEANTES
     P({
       id: 'walker-120', name: 'Walker 120', category: 'senuelos', sub: 'paseantes', type: 'Paseante de superficie',
@@ -459,7 +456,7 @@
       when: { Condiciones: 'Costa abierta, viento moderado', 'Tipo de agua': 'Cualquiera', Profundidad: 'Superficie a media agua', Recuperación: 'Lineal y jerking', Escenario: 'Costa rocosa y playas' },
       techniques: ['spinning'], species: ['lubina', 'anjova', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'espigon', 'oleaje'],
-      related: ['arc-3000', 'pe-x8-08', 'fluoro-025', 'drift-minnow-110f'],
+      related: ['arc-3000', 'pe-x8-08', 'fluoro-025', 'minnow-kingdom-105s-plata-holo'],
       art: { k: 'rod', c: ['#2c3230', '#8b6d4c'] }, listings: { wallapop: '' }
     }),
     P({
@@ -772,7 +769,7 @@
 
   const journal = [
     {
-      slug: 'como-elegir-un-vinilo-para-lubina', title: 'Cómo elegir un vinilo para lubina', cat: 'Guías de pesca', read: 5, scene: 'coast',
+      slug: 'como-elegir-un-vinilo-para-lubina', photo: 'assets/photos/journal-como-elegir-un-vinilo-para-lubina.jpg', title: 'Cómo elegir un vinilo para lubina', cat: 'Guías de pesca', read: 5, scene: 'coast',
       excerpt: 'Tamaño, cola y cabeza plomada: tres decisiones que cambian el nado y el resultado.',
       techniques: ['spinning'], species: ['lubina'], products: ['paddle-tail-90', 'slim-shad-120', 'jig-head-10'],
       body: [
@@ -787,9 +784,9 @@
       ]
     },
     {
-      slug: 'spinning-desde-costa-equipamiento-basico', title: 'Spinning desde costa: equipamiento básico', cat: 'Equipamiento', read: 6, scene: 'rock',
+      slug: 'spinning-desde-costa-equipamiento-basico', photo: 'assets/photos/journal-spinning-desde-costa-equipamiento-basico.webp', title: 'Spinning desde costa: equipamiento básico', cat: 'Equipamiento', read: 6, scene: 'rock',
       excerpt: 'Caña, carrete, línea y cinco señuelos para empezar sin llenar la mochila.',
-      techniques: ['spinning'], species: ['lubina', 'anjova'], products: ['ridge-902m', 'arc-3000', 'pe-x8-08', 'fluoro-025', 'drift-minnow-110f'],
+      techniques: ['spinning'], species: ['lubina', 'anjova'], products: ['ridge-902m', 'arc-3000', 'pe-x8-08', 'fluoro-025', 'minnow-kingdom-105s-plata-holo'],
       body: [
         ['p', 'Empezar en el spinning no requiere un gran equipo, sino un equipo bien equilibrado. Estas son las piezas básicas.'],
         ['h', 'La caña'],
@@ -803,9 +800,9 @@
       ]
     },
     {
-      slug: 'que-gramaje-utilizar-segun-las-condiciones', title: 'Qué gramaje utilizar según las condiciones', cat: 'Consejos', read: 4, scene: 'harbor',
+      slug: 'que-gramaje-utilizar-segun-las-condiciones', photo: 'assets/photos/journal-que-gramaje-utilizar-segun-las-condiciones.webp', title: 'Qué gramaje utilizar según las condiciones', cat: 'Consejos', read: 4, scene: 'harbor',
       excerpt: 'Viento, oleaje, corriente y profundidad. Cómo ajustar el peso de tu señuelo.',
-      techniques: ['spinning', 'light-spinning'], species: [], products: ['jig-head-7', 'jig-head-10', 'jig-head-21', 'cast-minnow-90s'],
+      techniques: ['spinning', 'light-spinning'], species: [], products: ['jig-head-7', 'jig-head-10', 'jig-head-21', 'minnow-kingdom-105s-sardina-azul'],
       body: [
         ['p', 'El gramaje correcto es el que te permite llegar a la zona de pesca y mantener el señuelo en la capa de agua donde está el pez. Ni más, ni menos.'],
         ['h', 'Viento'],
@@ -817,7 +814,7 @@
       ]
     },
     {
-      slug: 'como-elegir-un-fluorocarbono', title: 'Cómo elegir un fluorocarbono', cat: 'Equipamiento', read: 4, scene: 'river',
+      slug: 'como-elegir-un-fluorocarbono', photo: 'assets/photos/journal-como-elegir-un-fluorocarbono.webp', title: 'Cómo elegir un fluorocarbono', cat: 'Equipamiento', read: 4, scene: 'river',
       excerpt: 'Diámetro, longitud del bajo y nudos. Lo que de verdad importa.',
       techniques: ['spinning', 'light-spinning', 'eging'], species: [], products: ['fluoro-025', 'pe-x8-08'],
       body: [
@@ -831,7 +828,7 @@
       ]
     },
     {
-      slug: 'rockfishing-equipo-basico-para-empezar', title: 'Rockfishing: equipo básico para empezar', cat: 'Técnicas', read: 5, scene: 'rock',
+      slug: 'rockfishing-equipo-basico-para-empezar', photo: 'assets/photos/journal-rockfishing-equipo-basico-para-empezar.webp', title: 'Rockfishing: equipo básico para empezar', cat: 'Técnicas', read: 5, scene: 'rock',
       excerpt: 'Una caña ligera, un carrete pequeño y una caja de micro vinilos.',
       techniques: ['rockfishing'], species: ['depredadores'], products: ['rockline-742ul', 'arc-1000', 'pe-x4-03', 'pin-tail-55', 'jig-head-3'],
       body: [
@@ -845,7 +842,7 @@
       ]
     },
     {
-      slug: 'eging-primeros-pasos', title: 'Eging: primeros pasos para pescar calamar', cat: 'Especies', read: 5, scene: 'night',
+      slug: 'eging-primeros-pasos', photo: 'assets/photos/journal-eging-primeros-pasos.webp', title: 'Eging: primeros pasos para pescar calamar', cat: 'Especies', read: 5, scene: 'night',
       excerpt: 'Tirones, caída y paciencia. Todo lo necesario para tu primera noche de eging.',
       techniques: ['eging'], species: ['calamar', 'cefalopodos'], products: ['egi-30-night', 'egi-25-dawn', 'tide-egi-862m', 'arc-2500s'],
       body: [
@@ -859,7 +856,7 @@
       ]
     },
     {
-      slug: 'salir-al-amanecer-checklist', title: 'Salir al amanecer: lo que no puede faltar', cat: 'Outdoor', read: 3, scene: 'dawn',
+      slug: 'salir-al-amanecer-checklist', photo: 'assets/photos/journal-salir-al-amanecer-checklist.webp', title: 'Salir al amanecer: lo que no puede faltar', cat: 'Outdoor', read: 3, scene: 'dawn',
       excerpt: 'Una lista breve para salir ligero y volver con todo.',
       techniques: [], species: [], products: ['mochila-coastline', 'gafas-polarizadas', 'alicates-alu', 'caja-organizadora'],
       body: [

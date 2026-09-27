@@ -24,7 +24,7 @@
   function sceneMedia(o, cls = '', label) {
     const alt = label || o.alt || o.name || o.title || 'VESCORA';
     const inner = o.photo
-      ? `<img src="${esc(o.photo)}" alt="${esc(alt)}" loading="lazy" decoding="async">`
+      ? `<img src="${esc(o.photo)}" alt="${esc(alt)}" ${o.eager ? 'fetchpriority="high"' : 'loading="lazy"'} decoding="async">`
       : A.scene(o.scene || 'coast', { label: alt, seed: o.id || o.slug, flip: o.flip });
     return `<div class="media grain ${cls}">${inner}</div>`;
   }
@@ -40,7 +40,7 @@
     return `<a class="card reveal reveal-d${i % 4}" href="${pUrl(p)}">
       <div class="card__media">${prodArt(p)}<span class="card__tag">${esc(subName(p))}</span></div>
       <div class="card__body">
-        <div class="card__name">VESCORA ${esc(p.name)}</div>
+        <div class="card__name">${esc(p.name)}</div>
         <div class="card__type">${esc(p.type)}</div>
         <div class="card__spec">${esc(specLine(p))}</div>
         <div class="card__foot"><span class="tag tech">${esc(tech)}</span><span class="link-arrow">Explorar ${arrow}</span></div>
@@ -114,7 +114,7 @@
       const kit = buildKit(state);
       const q = new URLSearchParams(state).toString();
       kitHtml = `<p class="kit__path">${esc(SPEC[state.species].name)} → ${esc(COND[state.scenario].name)} → ${esc(TECH[state.technique].name)} → ${esc(BANDS[state.band][0])}</p>
-        <ul class="kit__list">${kit.map(([role, p]) => `<li><a href="${pUrl(p)}"><span class="thumb">${A.product(p)}</span><span><span class="kit__role">${esc(role)}</span><strong>${esc(p.name)}</strong><span class="small muted">${esc(specLine(p))}</span></span>${arrow}</a></li>`).join('')}</ul>
+        <ul class="kit__list">${kit.map(([role, p]) => `<li><a href="${pUrl(p)}"><span class="thumb">${prodArt(p)}</span><span><span class="kit__role">${esc(role)}</span><strong>${esc(p.name)}</strong><span class="small muted">${esc(specLine(p))}</span></span>${arrow}</a></li>`).join('')}</ul>
         <div class="kit__foot"><a class="link-arrow" href="tecnicas/${state.technique}">Guía de ${esc(TECH[state.technique].name)} ${arrow}</a>${full ? '' : `<a class="link-arrow" href="tu-equipo?${q}">Abrir y compartir ${arrow}</a>`}</div>`;
     } else {
       kitHtml = `<p class="kit__empty">Responde a las cuatro preguntas y VESCORA te propondrá un equipo de partida: señuelo, montaje, línea y conexión.</p>`;
@@ -159,7 +159,7 @@
   V.home = () => {
     const featured = D.products.filter((p) => p.featured);
     const ig = [
-      ['scene', { scene: 'dawn', id: 'ig1' }, 'Primera luz'], ['prod', PROD['drift-minnow-110f'], 'Drift Minnow 110F'], ['scene', { scene: 'rock', id: 'ig2' }, 'Costa rocosa'],
+      ['scene', { scene: 'dawn', id: 'ig1' }, 'Primera luz'], ['prod', PROD['minnow-kingdom-105s-sardina-azul'], 'Minnow Kingdom 105S'], ['scene', { scene: 'rock', id: 'ig2' }, 'Costa rocosa'],
       ['prod', PROD['egi-30-night'], 'Egi Night 3.0'], ['scene', { scene: 'night', id: 'ig3' }, 'Noches de eging'], ['scene', { scene: 'forest', id: 'ig4' }, 'Fuera del camino']
     ];
     return {
@@ -168,7 +168,7 @@
       over: true,
       html: `
       <section class="hero">
-        <div class="hero__media" data-parallax>${sceneMedia({ scene: 'dawn', id: 'hero', flip: true }, '', 'Pescador lanzando desde la roca al amanecer')}</div>
+        <div class="hero__media" data-parallax>${sceneMedia({ scene: 'dawn', id: 'hero', photo: 'assets/photos/hero-lago-spinning.webp', eager: true }, '', 'Pescador con mochila lanzando desde la orilla de un lago rodeado de pinos')}</div>
         <div class="wrap hero__content">
           <div class="hero__kicker">Equipment for the wild</div>
           <h1 class="hero__title">VESCORA</h1>
@@ -186,8 +186,8 @@
       <section class="section">
         <div class="wrap manifesto">
           <div class="reveal">
-            ${sceneMedia({ scene: 'river', id: 'manifesto' }, 'manifesto__media', 'Río entre bosques a primera hora')}
-            <div class="manifesto__caption"><span>Río · Primera hora</span><span>01 / Manifiesto</span></div>
+            ${sceneMedia({ scene: 'river', id: 'manifesto', photo: 'assets/photos/manifiesto-carrete.webp' }, 'manifesto__media', 'Mano sujetando la caña y recogiendo línea con el carrete de spinning')}
+            <div class="manifesto__caption"><span>Spinning · Recogida</span><span>01 / Manifiesto</span></div>
           </div>
           <div class="manifesto__text reveal reveal-d1">
             <div class="eyebrow">Manifiesto</div>
@@ -206,9 +206,9 @@
             <p class="lede">Por lo que buscas, por cómo pescas o por lo que quieres pescar. Tres caminos al mismo equipo.</p></div>
           <div class="routes">
             ${[
-              ['01', 'Equipamiento', '¿Sabes lo que buscas?', 'Explora directamente nuestro catálogo.', 'Ver equipamiento', 'equipamiento', { scene: 'harbor', id: 'r1' }],
-              ['02', 'Técnicas', '¿Sabes cómo quieres pescar?', 'Descubre el equipamiento recomendado para cada técnica.', 'Explorar técnicas', 'tecnicas', { scene: 'coast', id: 'r2' }],
-              ['03', 'Especies', '¿Sabes qué quieres pescar?', 'Descubre qué equipamiento puede ayudarte a enfrentarte a cada especie.', 'Explorar especies', 'especies', { scene: 'boat', id: 'r3' }]
+              ['01', 'Equipamiento', '¿Sabes lo que buscas?', 'Explora directamente nuestro catálogo.', 'Ver equipamiento', 'equipamiento', { scene: 'harbor', id: 'r1', photo: 'assets/photos/ruta-equipamiento.webp' }],
+              ['02', 'Técnicas', '¿Sabes cómo quieres pescar?', 'Descubre el equipamiento recomendado para cada técnica.', 'Explorar técnicas', 'tecnicas', { scene: 'coast', id: 'r2', photo: 'assets/photos/ruta-tecnicas.webp' }],
+              ['03', 'Especies', '¿Sabes qué quieres pescar?', 'Descubre qué equipamiento puede ayudarte a enfrentarte a cada especie.', 'Explorar especies', 'especies', { scene: 'boat', id: 'r3', photo: 'assets/photos/ruta-especies.webp' }]
             ].map(([n, t, q, d, c, u, sc], i) => `<a class="route reveal reveal-d${i}" href="${u}">${sceneMedia(sc, '', t)}<div class="route__body"><div class="route__num">${n} —</div><div class="route__title">${t}</div><p class="route__q">${q}</p><p class="route__t">${d}</p><span class="link-arrow">${c} ${arrow}</span></div></a>`).join('')}
           </div>
         </div>
@@ -298,7 +298,7 @@
     const intro = cat
       ? pageHero({ eyebrow: 'Equipamiento', title: cat.name, lede: cat.claim + ' ' + cat.intro, scene: { scene: cat.scene, id: 'cat-' + cat.id, photo: cat.photo }, crumbsHtml: crumbs(crumbItems) })
       : `<section class="page-head"><div class="wrap">${crumbs(crumbItems)}<h1 class="display">Equipamiento</h1><p class="lede">Señuelos, cañas, carretes, líneas y accesorios. Una selección pensada para funcionar como un sistema.</p></div></section>
-        <section><div class="wrap"><div class="cats">${D.categories.map((c, i) => `<a class="cat reveal" href="equipamiento/${c.id}"><div class="cat__name"><small>0${i + 1}</small>${esc(c.name)}</div><div class="cat__sub">${c.sub.map((s) => esc(s.name)).join(' · ')}</div><div class="cat__media media">${A.product(D.products.find((p) => p.category === c.id))}</div></a>`).join('')}</div></div></section>`;
+        <section><div class="wrap"><div class="cats">${D.categories.map((c, i) => `<a class="cat reveal" href="equipamiento/${c.id}"><div class="cat__name"><small>0${i + 1}</small>${esc(c.name)}</div><div class="cat__sub">${c.sub.map((s) => esc(s.name)).join(' · ')}</div><div class="cat__media media">${prodArt(D.products.find((p) => p.category === c.id))}</div></a>`).join('')}</div></div></section>`;
     return {
       title: cat ? `${cat.name} de pesca · Equipamiento` : 'Equipamiento de pesca',
       description: cat ? `${cat.claim} ${cat.intro}` : 'Catálogo VESCORA: señuelos, cañas, carretes, líneas y accesorios de pesca, organizados por técnica y especie.',
@@ -332,7 +332,8 @@
     const quick = [[p.category === 'canas' ? 'Longitud' : 'Medida', p.length], [p.category === 'canas' ? 'Lance' : 'Peso', p.specs.Peso || p.specs['Acción de lance'] || '—'], ['Tipo', p.type]];
     const specs = Object.assign({}, p.specs, { 'Técnica recomendada': p.techniques.map((t) => TECH[t].name).join(', ') }, p.species.length ? { 'Especies objetivo': p.species.map((s) => SPEC[s].name).join(', ') } : {});
     const related = (p.related || []).map((r) => PROD[r]).filter(Boolean);
-    const sameCat = D.products.filter((x) => x.id !== p.id && x.sub === p.sub && x.category === p.category).slice(0, 4);
+    const family = p.family ? D.products.filter((x) => x.family === p.family) : [];
+    const sameCat = D.products.filter((x) => x.id !== p.id && x.sub === p.sub && x.category === p.category && (!p.family || x.family !== p.family)).slice(0, 4);
     const sceneKey = p.techniques[0] ? TECH[p.techniques[0]].scene : 'coast';
     const listings = Object.entries(p.listings || {}).filter(([k]) => D.site.platforms[k]).map(([k, v]) => ({ k, name: D.site.platforms[k].name, href: v || D.site.platforms[k].profile })).filter((x) => x.href);
     const whenIcons = { Condiciones: '◐', 'Tipo de agua': '≈', Profundidad: '↧', Recuperación: '↻', Escenario: '△' };
@@ -343,17 +344,17 @@
       <div class="wrap product">
         <div class="product__gallery">
           ${crumbs(crumbItems)}
-          <div class="gallery__main" id="gmain">${prodArt(p)}</div>
-          <div class="gallery__thumbs" role="group" aria-label="Vistas del producto">
+          <div class="gallery__main${p.photo ? ' is-photo' : ''}" id="gmain">${prodArt(p)}</div>
+          ${family.length > 1 ? `<div class="colorways"><div class="block-title">Colores · ${family.length}</div><div class="gallery__thumbs gallery__thumbs--colors">${family.map((f) => `<a href="${pUrl(f)}" ${f.id === p.id ? 'aria-current="true"' : ''} title="${esc(f.color)}">${prodArt(f)}<span>${esc(f.color)}</span></a>`).join('')}</div></div>` : p.photo ? '' : `<div class="gallery__thumbs" role="group" aria-label="Vistas del producto">
             <button type="button" data-view="light" aria-pressed="true" aria-label="Vista de estudio">${A.product(p)}</button>
             <button type="button" data-view="dark" class="t-dark" aria-pressed="false" aria-label="Vista en fondo oscuro">${A.product(p)}</button>
             <button type="button" data-view="scene" class="t-scene" aria-pressed="false" aria-label="Vista en su escenario">${A.scene(sceneKey, { seed: p.id, label: 'Escenario' })}</button>
-          </div>
+          </div>`}
         </div>
         <div class="product__info">
           <div>
             <div class="eyebrow">${esc(cat.name)} · ${esc(subName(p))}</div>
-            <h1 class="product__name" style="margin-top:16px">VESCORA ${esc(p.name)}</h1>
+            <h1 class="product__name" style="margin-top:16px">${esc(p.name)}</h1>
           </div>
           <dl class="quick">${quick.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
           <div><p class="lede" style="max-width:none">${esc(p.summary)}</p><p class="muted" style="margin-top:14px">${esc(p.description)}</p></div>
@@ -378,8 +379,8 @@
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">Ecosistema Vescora</div><h2 class="h2" style="margin-top:18px">Completa el montaje</h2></div></div>
           <div class="eco">
-            <div class="eco__now reveal"><div class="eyebrow on-dark">Estás viendo</div><div class="media">${A.product(p)}</div><div><div class="h3" style="text-transform:uppercase">${esc(p.name)}</div><div class="small" style="opacity:.7">${esc(specLine(p))}</div></div></div>
-            <div class="reveal reveal-d1"><div class="block-title">También puedes necesitar</div><div class="eco__list">${related.map((r) => `<a class="eco__item" href="${pUrl(r)}"><span class="thumb">${A.product(r)}</span><span><span class="kit__role">${esc(subName(r))}</span><strong>${esc(r.name)}</strong><span class="small muted">${esc(specLine(r))}</span></span><span class="eco__plus" aria-hidden="true">+</span></a>`).join('')}</div></div>
+            <div class="eco__now reveal"><div class="eyebrow on-dark">Estás viendo</div><div class="media">${prodArt(p)}</div><div><div class="h3" style="text-transform:uppercase">${esc(p.name)}</div><div class="small" style="opacity:.7">${esc(specLine(p))}</div></div></div>
+            <div class="reveal reveal-d1"><div class="block-title">También puedes necesitar</div><div class="eco__list">${related.map((r) => `<a class="eco__item" href="${pUrl(r)}"><span class="thumb">${prodArt(r)}</span><span><span class="kit__role">${esc(subName(r))}</span><strong>${esc(r.name)}</strong><span class="small muted">${esc(specLine(r))}</span></span><span class="eco__plus" aria-hidden="true">+</span></a>`).join('')}</div></div>
           </div>
         </div>
       </section>` : ''}
@@ -744,7 +745,7 @@
   let INDEX;
   function buildIndex() {
     INDEX = [];
-    D.products.forEach((p) => INDEX.push({ type: 'Productos', title: 'VESCORA ' + p.name, sub: `${p.type} · ${specLine(p)}`, url: pUrl(p), p, text: norm([p.name, p.type, p.summary, CAT[p.category].name, subName(p), p.length, p.weight != null ? p.weight + ' g' : '', Object.values(p.specs).join(' '), p.techniques.map((t) => TECH[t].name).join(' '), p.species.map((s) => SPEC[s].name).join(' '), p.conditions.map((c) => COND[c].name).join(' ')].join(' ')), key: norm(p.name + ' ' + p.type + ' ' + subName(p)) }));
+    D.products.forEach((p) => INDEX.push({ type: 'Productos', title: p.name, sub: `${p.type} · ${specLine(p)}`, url: pUrl(p), p, text: norm([p.name, p.type, p.summary, CAT[p.category].name, subName(p), p.length, p.weight != null ? p.weight + ' g' : '', Object.values(p.specs).join(' '), p.techniques.map((t) => TECH[t].name).join(' '), p.species.map((s) => SPEC[s].name).join(' '), p.conditions.map((c) => COND[c].name).join(' ')].join(' ')), key: norm(p.name + ' ' + p.type + ' ' + subName(p)) }));
     D.techniques.forEach((t) => INDEX.push({ type: 'Técnicas', title: t.name, sub: t.claim, url: 'tecnicas/' + t.id, o: t, text: norm([t.name, t.claim, t.intro, t.scenario].join(' ')), key: norm(t.name) }));
     D.species.forEach((s) => INDEX.push({ type: 'Especies', title: s.name, sub: s.claim, url: 'especies/' + s.id, o: s, text: norm([s.name, s.latin, s.claim, s.intro].join(' ')), key: norm(s.name) }));
     D.categories.forEach((c) => {
@@ -773,7 +774,7 @@
     if (!q.trim()) return '';
     if (!res.length) return `<p class="muted">Sin resultados para «${esc(q)}». Prueba con una especie, una técnica o un tipo de señuelo.</p>`;
     const groups = ['Productos', 'Técnicas', 'Especies', 'Categorías', 'Journal'];
-    const thumb = (it) => it.p ? A.product(it.p) : it.o && it.o.scene ? A.scene(it.o.scene, { seed: it.o.id || it.o.slug, label: it.title }) : '';
+    const thumb = (it) => it.p ? prodArt(it.p) : it.o && it.o.scene ? A.scene(it.o.scene, { seed: it.o.id || it.o.slug, label: it.title }) : '';
     const col = (gs) => gs.map((g) => {
       const items = res.filter((r) => r.type === g).slice(0, g === 'Productos' ? 8 : 5);
       return items.length ? `<div class="search__group"><h3>${g} · ${res.filter((r) => r.type === g).length}</h3>${items.map((it) => `<a class="result" href="${it.url}"><span class="result__media">${thumb(it)}</span><span><strong>${esc(it.title)}</strong><span class="small muted">${esc(it.sub)}</span></span>${arrow}</a>`).join('')}</div>` : '';
