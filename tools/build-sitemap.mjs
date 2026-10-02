@@ -7,6 +7,7 @@ vm.runInNewContext(readFileSync(new URL('../assets/js/data.js', import.meta.url)
 const D = ctx.window.VESCORA;
 const base = D.site.domain.replace(/\/$/, '');
 const paths = ['', 'equipamiento', 'tecnicas', 'especies', 'tu-equipo', 'vescora', 'vescora/filosofia', 'journal', 'contacto',
+  ...D.site.waterTypes.flatMap((w) => ['equipamiento', 'tecnicas', 'especies'].map((a) => `${a}/${w.slug}`)),
   ...D.categories.map((c) => `equipamiento/${c.id}`),
   ...D.products.map((p) => `equipamiento/${p.category}/${p.id}`),
   ...D.techniques.map((t) => `tecnicas/${t.id}`),

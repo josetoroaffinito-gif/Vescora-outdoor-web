@@ -391,6 +391,38 @@
         <rect x="240" y="360" width="140" height="80" rx="10" fill="#000" opacity=".1"/>
         <rect x="560" y="300" width="36" height="120" rx="10" fill="${c[1]}" opacity=".8"/>`, L, lin(a, [c[0], '#8d7c60']));
     },
+    spoon(c, o, L) {
+      const a = id('a');
+      return wrap(`<path d="M150,300 L250,300" stroke="#8a9096" stroke-width="3"/><circle cx="146" cy="300" r="7" fill="none" stroke="#3b4045" stroke-width="3"/>
+        <ellipse cx="300" cy="262" rx="52" ry="96" transform="rotate(-62 300 262)" fill="url(#${a})"/>
+        <ellipse cx="292" cy="250" rx="18" ry="50" transform="rotate(-62 292 250)" fill="#fff" opacity=".35"/>
+        <rect x="250" y="292" width="200" height="16" rx="8" fill="#6c7276"/>
+        <circle cx="300" cy="300" r="10" fill="#c9a64a"/><circle cx="350" cy="300" r="10" fill="#c9a64a"/><circle cx="400" cy="300" r="10" fill="#b8323a"/>
+        ${treble(470, 300, 1.1).replace('translate(470,300)', 'translate(470,300) rotate(-90)')}`, L, lin(a, ['#f2f3f1', c[0], c[1]], false));
+    },
+    fly(c, o, L) {
+      let hackle = '';
+      for (let i = -6; i <= 6; i++) hackle += `<path d="M300,${o.dry ? 250 : 300} l${i * 7},${o.dry ? -70 : -34}" stroke="${c[1]}" stroke-width="3" stroke-linecap="round" opacity=".8"/>`;
+      return wrap(`<path d="M260,300 L520,300 C600,300 600,400 520,400 C480,400 470,370 470,352 L486,364" stroke="#2c2f31" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="250" cy="300" r="12" fill="none" stroke="#2c2f31" stroke-width="5"/>
+        <path d="M290,286 C340,276 450,282 500,294 L500,306 C450,318 340,324 290,314 Z" fill="${c[0]}"/>
+        ${o.dry ? `<path d="M480,290 l60,-60 M488,292 l70,-48" stroke="${c[1]}" stroke-width="4"/>` : `<path d="M500,300 l60,-14 M500,300 l60,14" stroke="${c[0]}" stroke-width="5" stroke-linecap="round"/><circle cx="292" cy="300" r="16" fill="#c08a4a"/>`}
+        ${hackle}`, L);
+    },
+    flyreel(c, o, L) {
+      const a = id('a'), b = id('b');
+      return wrap(`<rect x="330" y="128" width="140" height="14" rx="7" fill="#26292b"/><rect x="388" y="140" width="24" height="40" fill="#26292b"/>
+        <circle cx="400" cy="320" r="150" fill="url(#${a})"/>
+        <circle cx="400" cy="320" r="118" fill="none" stroke="#000" stroke-opacity=".18" stroke-width="2"/>
+        ${[0, 60, 120, 180, 240, 300].map((d) => `<circle cx="${400 + 78 * Math.cos(d * Math.PI / 180)}" cy="${320 + 78 * Math.sin(d * Math.PI / 180)}" r="22" fill="url(#${b})"/>`).join('')}
+        <circle cx="400" cy="320" r="26" fill="#26292b"/><rect x="452" y="226" width="16" height="44" rx="8" fill="#26292b"/>
+        <text x="400" y="440" text-anchor="middle" font-family="Poppins, sans-serif" font-weight="700" font-size="13" letter-spacing="4" fill="#e9e5da" opacity=".85">VESCORA</text>`,
+        L, lin(a, ['#e6e9ea', c[1], c[0]]) + lin(b, ['#141618', '#3a3f43']));
+    },
+    boilies(c, o, L) {
+      const pts = [[300, 330, 46], [390, 300, 46], [480, 336, 46], [350, 400, 46], [440, 408, 46], [520, 410, 40], [260, 410, 40]];
+      return wrap(pts.map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c[0]}"/><circle cx="${x - r * 0.3}" cy="${y - r * 0.35}" r="${r * 0.28}" fill="#fff" opacity=".25"/><circle cx="${x + r * 0.2}" cy="${y + r * 0.1}" r="${r * 0.12}" fill="${c[1]}" opacity=".6"/>`).join(''), L);
+    },
     glasses(c, o, L) {
       const a = id('a');
       return wrap(`<path d="M160,250 L110,230" stroke="${c[0]}" stroke-width="10" stroke-linecap="round"/><path d="M640,250 L690,230" stroke="${c[0]}" stroke-width="10" stroke-linecap="round"/>

@@ -44,6 +44,17 @@ Todo está en `assets/js/data.js`.
 - **Datos legales.** `site.legal`: razón social, CIF/NIF, dirección, email, teléfono, responsable y dominio. Hasta completarlos aparecen resaltados entre corchetes (p. ej. `[RAZÓN SOCIAL]`) en las páginas legales. Los textos legales son una base orientativa y conviene que los revise una asesoría.
 - **Sitemap.** Después de cambiar datos, ejecuta `node tools/build-sitemap.mjs`.
 
+## Agua dulce y agua salada
+
+El tipo de agua es una **dimensión transversal**, no una sección ni una pregunta del recomendador.
+
+- **Modelo:** productos, técnicas, especies y escenarios tienen `waterTypes: [FW]`, `[SW]` o `[FW, SW]`. Una entidad multiagua existe una sola vez y aparece en ambos contextos.
+- **Navegación:** `/equipamiento/agua-dulce`, `/tecnicas/agua-dulce`, `/especies/agua-dulce` (y `agua-salada`). Dentro de una categoría o técnica se filtra con `?agua=dulce|salada`.
+- **Recomendador:** sigue siendo Especie → Escenario → Técnica (→ Peso de lance, solo si hay señuelos con peso). El tipo de agua se infiere de lo elegido y filtra productos, escenarios y técnicas compatibles. Los huecos del equipo se configuran en `site.kitSlots`.
+- **Añadir una especie, técnica o escenario:** basta con añadirlo a `data.js` con su `waterTypes` y sus relaciones (`techniques`, `scenarios`). No hace falta tocar la lógica.
+- **Comprobación:** `node tools/validate-data.mjs` detecta ids duplicados, referencias rotas y relaciones entre aguas incompatibles.
+- **Clasificación y revisión pendiente:** [docs/clasificacion-tipo-agua.md](docs/clasificacion-tipo-agua.md).
+
 ## Preparado para crecer
 
 - **Ecommerce (fase 2).** Los productos ya tienen `price`, `sku` y `stock` (a `null`) y existe `site.features.commerce`. La interfaz no los muestra mientras sea `false`.

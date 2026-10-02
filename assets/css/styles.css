@@ -494,3 +494,18 @@ body.is-locked { overflow: hidden; }
 .ig a.is-product .media > img { width: 100%; height: 100%; object-fit: cover; }
 .toolbar .chips--scroll { margin: 0; padding: 2px 0; }
 .hero__media img { object-position: 25% 55%; }
+
+/* ——— Tipo de agua (dimensión transversal) ——— */
+.water-switch { margin-bottom: 12px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.water-switch::-webkit-scrollbar { display: none; }
+.toolbar .water-switch { margin-bottom: 10px; }
+.tile__badge { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; opacity: .8; margin-bottom: 10px; }
+.tiles--2 { grid-template-columns: 1fr; }
+.tiles--2 .tile { aspect-ratio: 16 / 9; }
+@media (min-width: 760px) { .tiles--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tiles--2 .tile { aspect-ratio: 4 / 3; } }
+.chips__group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; width: 100%; }
+.chips__group + .chips__group { margin-top: 6px; }
+.chips__label { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; opacity: .6; width: 100%; margin: 4px 0 2px; }
+.kit__water { display: inline-block; margin-left: 8px; padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 10px; letter-spacing: .14em; }
+.menu__cols a.menu__water { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; opacity: .5; margin-top: 10px; }
+.menu__cols a.menu__water:first-of-type { margin-top: 0; }

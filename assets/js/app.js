@@ -68,66 +68,125 @@
   const productsFor = (key, id) => D.products.filter((p) => p[key].includes(id));
   const group = (list, cat) => list.filter((p) => p.category === cat);
 
+  // ——— Tipo de agua: dimensión transversal (nunca es una pregunta del recomendador) ———
+  const WATERS = D.site.waterTypes;
+  const WATER = by(WATERS);
+  const WATER_BY_Q = Object.fromEntries(WATERS.flatMap((w) => [[w.q, w], [w.slug, w]]));
+  const ALL_WATER = WATERS.map((w) => w.id);
+  const isWaterSlug = (x) => WATERS.some((w) => w.slug === x);
+  // Sin `waterTypes` declarado, una entidad se considera válida en cualquier agua.
+  const wOf = (o) => (o && o.waterTypes && o.waterTypes.length ? o.waterTypes : ALL_WATER);
+  const inWater = (o, ws) => !ws || wOf(o).some((w) => ws.includes(w));
+  // Contexto de agua = intersección de los tipos de agua de las entidades elegidas.
+  const ctxWater = (...ents) => ents.filter(Boolean).reduce((acc, e) => acc.filter((w) => wOf(e).includes(w)), ALL_WATER);
+  const waterNames = (o) => wOf(o).map((w) => WATER[w].name).join(' · ');
+  const waterParam = (q) => WATER_BY_Q[q.get('agua') || ''] || null;
+  const withWater = (href, w) => (w ? href + (href.includes('?') ? '&' : '?') + 'agua=' + w.q : href);
+  const singleWater = (o) => (wOf(o).length === 1 ? WATER[wOf(o)[0]] : null);
+  function waterSwitch(current, hrefFor, label = 'Todas las aguas') {
+    return `<div class="chips water-switch" role="group" aria-label="Tipo de agua">${[null].concat(WATERS).map((w) => `<a class="chip ${(current && w && current.id === w.id) || (!current && !w) ? 'is-active' : ''}" href="${hrefFor(w)}">${esc(w ? w.name : label)}</a>`).join('')}</div>`;
+  }
+
   // ——— "Tu equipo" ———
   const BANDS = { 'b1': ['Hasta 10 g', 0, 10], 'b2': ['10 – 20 g', 10, 20], 'b3': ['20 – 40 g', 20, 40], 'b4': ['Más de 40 g', 40, 999] };
+  // Escenarios de una especie: los declarados en la especie + los deducidos de sus productos, en su tipo de agua.
   function scenariosFor(speciesId) {
-    const set = new Set();
-    productsFor('species', speciesId).forEach((p) => p.conditions.forEach((c) => COND[c] && COND[c].scenario && set.add(c)));
-    return D.conditions.filter((c) => set.has(c.id));
+    const sp = SPEC[speciesId];
+    const set = new Set(sp.scenarios || []);
+    productsFor('species', speciesId).forEach((p) => p.conditions.forEach((c) => set.add(c)));
+    return D.conditions.filter((c) => c.scenario && set.has(c.id) && inWater(c, wOf(sp)));
   }
+  // Técnicas válidas: las de la especie compatibles con el agua de especie + escenario.
+  function techniquesFor(state) {
+    if (!state.species) return [];
+    const ws = ctxWater(SPEC[state.species], COND[state.scenario]);
+    return SPEC[state.species].techniques.map((t) => TECH[t]).filter((t) => t && inWater(t, ws));
+  }
+  const kitWater = (s) => ctxWater(SPEC[s.species], COND[s.scenario], TECH[s.technique]);
+  const lureSlot = D.site.kitSlots.find((x) => x.lure);
+  function slotPool(slot, s, ws) {
+    return D.products.filter((p) => p.category === slot.category && p.techniques.includes(s.technique) && inWater(p, ws)
+      && (!slot.subs || slot.subs.includes(p.sub)) && (!slot.species || p.species.includes(s.species)));
+  }
+  // El peso de lance solo se pregunta si algún señuelo compatible tiene peso (no aplica a mosca o carpfishing).
+  const needsBand = (s) => !!(s.species && s.technique && lureSlot && slotPool(lureSlot, s, kitWater(s)).some((p) => p.weight != null));
   function buildKit(s) {
-    const [, lo, hi] = BANDS[s.band];
+    const ws = kitWater(s);
+    const band = needsBand(s) ? BANDS[s.band] : null;
+    const [, lo, hi] = band || [null, 0, 999];
     const mid = (lo + Math.min(hi, 80)) / 2;
-    const fit = (w) => (w == null ? 0 : w >= lo && w <= hi ? 3 : -Math.min(3, Math.abs(w - mid) / 10));
+    const fit = (w) => (w == null || !band ? 0 : w >= lo && w <= hi ? 3 : -Math.min(3, Math.abs(w - mid) / 10));
     const rank = (list, extra = () => 0) => list
       .map((p, i) => ({ p, i, sc: (p.species.includes(s.species) ? 4 : 0) + (p.conditions.includes(s.scenario) ? 2 : 0) + extra(p) }))
       .sort((a, b) => b.sc - a.sc || a.i - b.i).map((x) => x.p);
-    const withTech = (cat, subs) => D.products.filter((p) => p.category === cat && p.techniques.includes(s.technique) && (!subs || subs.includes(p.sub)));
     const kit = [];
-    const lures = rank(withTech('senuelos').filter((p) => p.species.includes(s.species)), (p) => fit(p.weight));
-    if (lures[0]) kit.push(['Señuelo', lures[0]]);
-    if (lures[0] && lures[0].pairs) {
-      const heads = lures[0].pairs.map((id) => PROD[id]).sort((a, b) => fit(b.weight) - fit(a.weight) || Math.abs(a.weight - mid) - Math.abs(b.weight - mid));
-      kit.push(['Cabeza plomada', heads[0]]);
-    }
-    if (lures[1]) kit.push(['Alternativa', lures[1]]);
-    if (s.technique === 'surfcasting') {
-      const hook = rank(withTech('accesorios', ['anzuelos']))[0]; if (hook) kit.push(['Anzuelo', hook]);
-    }
-    const leader = rank(withTech('lineas', ['fluorocarbono', 'bajos']))[0]; if (leader) kit.push(['Bajo', leader]);
-    const conn = rank(withTech('accesorios', s.technique === 'surfcasting' ? ['giratorios'] : ['grapas', 'giratorios']))[0]; if (conn) kit.push(['Conexión', conn]);
-    const main = rank(withTech('lineas', ['trenzado', 'monofilamento']))[0]; if (main) kit.push(['Línea madre', main]);
-    const rod = rank(withTech('canas'), (p) => (p.weightRange && p.weightRange[0] <= hi && p.weightRange[1] >= lo ? 3 : 0))[0]; if (rod) kit.push(['Caña', rod]);
-    const reel = rank(withTech('carretes'))[0]; if (reel) kit.push(['Carrete', reel]);
+    let hasLure = false;
+    D.site.kitSlots.forEach((slot) => {
+      if (slot.ifNoLure && hasLure) return;
+      if (slot.lure) {
+        const lures = rank(slotPool(slot, s, ws), (p) => fit(p.weight));
+        if (!lures[0]) return;
+        hasLure = true;
+        kit.push([slot.role, lures[0]]);
+        if (lures[0].pairs) {
+          const heads = lures[0].pairs.map((id) => PROD[id]).filter((h) => h && inWater(h, ws)).sort((a, b) => fit(b.weight) - fit(a.weight) || Math.abs(a.weight - mid) - Math.abs(b.weight - mid));
+          if (heads[0]) kit.push(['Cabeza plomada', heads[0]]);
+        }
+        if (lures[1]) kit.push(['Alternativa', lures[1]]);
+        return;
+      }
+      const extra = slot.rod && band ? (p) => (p.weightRange && p.weightRange[0] <= hi && p.weightRange[1] >= lo ? 3 : 0) : undefined;
+      const best = rank(slotPool(slot, s, ws), extra)[0];
+      if (best) kit.push([slot.role, best]);
+    });
     return kit;
   }
 
   function finderHtml(state, full) {
-    const sp = D.species;
     const scen = state.species ? scenariosFor(state.species) : [];
-    const techs = state.species ? SPEC[state.species].techniques.map((t) => TECH[t]) : [];
+    const techs = techniquesFor(state);
+    const bandOn = needsBand(state);
     const pill = (step, val, label) => `<button type="button" class="chip" data-step="${step}" data-val="${val}" aria-pressed="${state[step] === val}">${esc(label)}</button>`;
     const step = (n, key, label, opts, enabled) => `<div class="step ${enabled ? '' : 'is-disabled'}"><div class="step__label"><span>0${n}</span><strong>${label}</strong></div><div class="chips">${opts}</div></div>`;
-    const ready = state.species && state.scenario && state.technique && state.band;
+    // Las especies se agrupan visualmente por tipo de agua; no es una pregunta adicional.
+    const speciesOpts = WATERS.map((w) => {
+      const list = D.species.filter((x) => wOf(x).includes(w.id));
+      return list.length ? `<div class="chips__group"><span class="chips__label">${esc(w.name)}</span>${list.map((x) => pill('species', x.id, x.name)).join('')}</div>` : '';
+    }).join('');
+    const ready = state.species && state.scenario && state.technique && (state.band || !bandOn);
     let kitHtml;
     if (ready) {
       const kit = buildKit(state);
-      const q = new URLSearchParams(state).toString();
-      kitHtml = `<p class="kit__path">${esc(SPEC[state.species].name)} → ${esc(COND[state.scenario].name)} → ${esc(TECH[state.technique].name)} → ${esc(BANDS[state.band][0])}</p>
-        <ul class="kit__list">${kit.map(([role, p]) => `<li><a href="${pUrl(p)}"><span class="thumb">${prodArt(p)}</span><span><span class="kit__role">${esc(role)}</span><strong>${esc(p.name)}</strong><span class="small muted">${esc(specLine(p))}</span></span>${arrow}</a></li>`).join('')}</ul>
-        <div class="kit__foot"><a class="link-arrow" href="tecnicas/${state.technique}">Guía de ${esc(TECH[state.technique].name)} ${arrow}</a>${full ? '' : `<a class="link-arrow" href="tu-equipo?${q}">Abrir y compartir ${arrow}</a>`}</div>`;
+      const params = Object.fromEntries(Object.entries(state).filter(([k, v]) => v && (k !== 'band' || bandOn)));
+      const q = new URLSearchParams(params).toString();
+      const ws = kitWater(state);
+      const path = [SPEC[state.species].name, COND[state.scenario].name, TECH[state.technique].name].concat(bandOn ? [BANDS[state.band][0]] : []);
+      kitHtml = `<p class="kit__path">${path.map(esc).join(' → ')}${ws.length === 1 ? ` <span class="kit__water">${esc(WATER[ws[0]].name)}</span>` : ''}</p>
+        ${kit.length ? `<ul class="kit__list">${kit.map(([role, p]) => `<li><a href="${pUrl(p)}"><span class="thumb">${prodArt(p)}</span><span><span class="kit__role">${esc(role)}</span><strong>${esc(p.name)}</strong><span class="small muted">${esc(specLine(p))}</span></span>${arrow}</a></li>`).join('')}</ul>` : `<p class="kit__empty">Todavía no hay equipamiento VESCORA para esta combinación. <a class="link-arrow" href="contacto">Pregúntanos ${arrow}</a></p>`}
+        <div class="kit__foot"><a class="link-arrow" href="${withWater(`tecnicas/${state.technique}`, ws.length === 1 ? WATER[ws[0]] : null)}">Guía de ${esc(TECH[state.technique].name)} ${arrow}</a>${full ? '' : `<a class="link-arrow" href="tu-equipo?${q}">Abrir y compartir ${arrow}</a>`}</div>`;
     } else {
-      kitHtml = `<p class="kit__empty">Responde a las cuatro preguntas y VESCORA te propondrá un equipo de partida: señuelo, montaje, línea y conexión.</p>`;
+      kitHtml = `<p class="kit__empty">Responde a las preguntas y VESCORA te propondrá un equipo de partida: señuelo o cebo, montaje, línea, caña y carrete.</p>`;
     }
+    const bandOpts = !state.technique || bandOn
+      ? Object.entries(BANDS).map(([k, v]) => pill('band', k, v[0])).join('')
+      : '<span class="small" style="opacity:.6">No aplica a esta técnica</span>';
     return `<div class="finder" data-finder data-full="${full ? 1 : 0}">
       <div class="finder__steps">
-        ${step(1, 'species', 'Quiero pescar', sp.map((x) => pill('species', x.id, x.name)).join(''), true)}
+        ${step(1, 'species', 'Quiero pescar', speciesOpts, true)}
         ${step(2, 'scenario', 'Escenario', scen.map((x) => pill('scenario', x.id, x.name)).join('') || '<span class="small" style="opacity:.6">Elige una especie</span>', !!state.species)}
         ${step(3, 'technique', 'Técnica', techs.map((x) => pill('technique', x.id, x.name)).join('') || '<span class="small" style="opacity:.6">Elige una especie</span>', !!state.scenario)}
-        ${step(4, 'band', 'Peso de lance', Object.entries(BANDS).map(([k, v]) => pill('band', k, v[0])).join(''), !!state.technique)}
+        ${step(4, 'band', 'Peso de lance', bandOpts, !!state.technique && bandOn)}
       </div>
       <div class="kit" aria-live="polite"><div class="kit__head"><span class="kit__title">TU EQUIPO</span><span class="tag">${ready ? 'Propuesta VESCORA' : 'Pendiente'}</span></div>${kitHtml}</div>
     </div>`;
+  }
+
+  // Normaliza el estado: descarta escenario/técnica que ya no son compatibles (especie o tipo de agua).
+  function cleanFinder(state) {
+    if (!state.species) { state.scenario = ''; state.technique = ''; return state; }
+    if (state.scenario && !scenariosFor(state.species).some((c) => c.id === state.scenario)) state.scenario = '';
+    if (state.technique && !techniquesFor(state).some((t) => t.id === state.technique)) state.technique = '';
+    return state;
   }
 
   function bindFinder(root, initial) {
@@ -140,13 +199,7 @@
       if (!b) return;
       const k = b.dataset.step, v = b.dataset.val;
       state[k] = state[k] === v ? '' : v;
-      const order = ['species', 'scenario', 'technique', 'band'];
-      order.slice(order.indexOf(k) + 1).forEach((kk) => {
-        if (kk === 'band') return;
-        if (kk === 'scenario' && state.species && !scenariosFor(state.species).some((c) => c.id === state.scenario)) state.scenario = '';
-        if (kk === 'technique' && state.species && !SPEC[state.species].techniques.includes(state.technique)) state.technique = '';
-        if (!state.species) { state.scenario = ''; state.technique = ''; }
-      });
+      cleanFinder(state);
       box.outerHTML = finderHtml(state, full);
       bindFinder(root, state);
       if (full) history.replaceState(null, '', 'tu-equipo' + (Object.values(state).some(Boolean) ? '?' + new URLSearchParams(Object.fromEntries(Object.entries(state).filter(([, x]) => x))) : ''));
@@ -232,14 +285,14 @@
       <section class="section section--tight">
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">Técnicas</div><h2 class="h2" style="margin-top:18px">Elige tu técnica</h2></div><a class="link-arrow" href="tecnicas">Todas las técnicas ${arrow}</a></div>
-          <div class="tiles">${D.techniques.map((t, i) => tile(t, `tecnicas/${t.id}`, t.type, i)).join('')}</div>
+          <div class="tiles">${D.techniques.map((t, i) => tile(t, `tecnicas/${t.id}`, t.type, i, waterNames(t))).join('')}</div>
         </div>
       </section>
 
       <section class="section">
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">Especies</div><h2 class="h2" style="margin-top:18px">¿Qué quieres pescar?</h2></div><a class="link-arrow" href="especies">Todas las especies ${arrow}</a></div>
-          <div class="tiles tiles--4">${D.species.slice(0, 4).map((s, i) => tile(s, `especies/${s.id}`, s.claim, i)).join('')}</div>
+          <div class="tiles tiles--4">${WATERS.flatMap((w) => D.species.filter((s) => wOf(s).includes(w.id)).slice(0, 2)).map((s, i) => tile(s, `especies/${s.id}`, s.claim, i, waterNames(s))).join('')}</div>
         </div>
       </section>
 
@@ -268,8 +321,8 @@
     };
   };
 
-  function tile(o, href, meta, i) {
-    return `<a class="tile reveal reveal-d${i % 3}" href="${href}">${sceneMedia(o, '', o.name)}<span class="tile__arrow" aria-hidden="true">↗</span><div class="tile__body"><div class="tile__name">${esc(o.name)}</div><div class="tile__meta">${esc(meta)}</div></div></a>`;
+  function tile(o, href, meta, i, badge = '') {
+    return `<a class="tile reveal reveal-d${i % 3}" href="${href}">${sceneMedia(o, '', o.name)}<span class="tile__arrow" aria-hidden="true">↗</span><div class="tile__body">${badge ? `<div class="tile__badge">${esc(badge)}</div>` : ''}<div class="tile__name">${esc(o.name)}</div><div class="tile__meta">${esc(meta)}</div></div></a>`;
   }
   function jcard(a) {
     return `<a class="jcard reveal" href="journal/${a.slug}">${sceneMedia({ scene: a.scene, id: a.slug, photo: a.photo }, '', a.title)}<div class="jcard__meta"><span>${esc(a.cat)}</span><span>${a.read} min</span></div><h3>${esc(a.title)}</h3><p>${esc(a.excerpt)}</p></a>`;
@@ -282,40 +335,60 @@
     ].map(([t, d], i) => `<div class="pillar reveal reveal-d${i}"><div class="pillar__n">0${i + 1}</div><h3>${t}</h3><p>${d}</p></div>`).join('')}</div>`;
   }
 
-  // Catálogo general y por categoría
-  V.catalog = (catId, q) => {
+  // Catálogo general y por categoría. El tipo de agua llega por ruta (/equipamiento/agua-dulce) o por ?agua=.
+  V.catalog = (catId, q, waterSlug) => {
     const cat = catId ? CAT[catId] : null;
     if (catId && !cat) return V.notFound();
+    const water = waterSlug ? WATER_BY_Q[waterSlug] : waterParam(q);
+    const ws = water ? [water.id] : null;
     const f = { sub: q.get('tipo') || '', tec: q.get('tecnica') || '', esp: q.get('especie') || '' };
-    let list = D.products.filter((p) => (!cat || p.category === cat.id) && (!f.sub || p.sub === f.sub) && (!f.tec || p.techniques.includes(f.tec)) && (!f.esp || p.species.includes(f.esp)));
-    const base = cat ? `equipamiento/${cat.id}` : 'equipamiento';
-    const qs = (patch) => { const o = Object.assign({}, { tipo: f.sub, tecnica: f.tec, especie: f.esp }, patch); const s = new URLSearchParams(Object.fromEntries(Object.entries(o).filter(([, v]) => v))).toString(); return base + (s ? '?' + s : ''); };
+    const inCtx = (p) => inWater(p, ws);
+    let list = D.products.filter((p) => inCtx(p) && (!cat || p.category === cat.id) && (!f.sub || p.sub === f.sub) && (!f.tec || p.techniques.includes(f.tec)) && (!f.esp || p.species.includes(f.esp)));
+    const base = cat ? `equipamiento/${cat.id}` : water ? `equipamiento/${water.slug}` : 'equipamiento';
+    const qs = (patch) => { const o = Object.assign({}, { tipo: f.sub, tecnica: f.tec, especie: f.esp, agua: cat && water ? water.q : '' }, patch); const s = new URLSearchParams(Object.fromEntries(Object.entries(o).filter(([, v]) => v))).toString(); return base + (s ? '?' + s : ''); };
+    // Al cambiar de agua se conservan los filtros que sigan siendo compatibles.
+    const waterHref = (w) => {
+      const keep = { tecnica: f.tec && inWater(TECH[f.tec], w && [w.id]) ? f.tec : '', especie: f.esp && inWater(SPEC[f.esp], w && [w.id]) ? f.esp : '' };
+      if (cat) { const o = Object.assign({ tipo: f.sub, agua: w ? w.q : '' }, keep); const s = new URLSearchParams(Object.fromEntries(Object.entries(o).filter(([, v]) => v))).toString(); return base + (s ? '?' + s : ''); }
+      const s = new URLSearchParams(Object.fromEntries(Object.entries(keep).filter(([, v]) => v))).toString();
+      return (w ? `equipamiento/${w.slug}` : 'equipamiento') + (s ? '?' + s : '');
+    };
+    const subsShown = cat ? cat.sub.filter((s) => !water || D.products.some((p) => p.category === cat.id && p.sub === s.id && inCtx(p))) : [];
     const chipsTop = cat
-      ? [`<a class="chip ${!f.sub ? 'is-active' : ''}" href="${qs({ tipo: '' })}">Todo</a>`].concat(cat.sub.map((s) => `<a class="chip ${f.sub === s.id ? 'is-active' : ''}" href="${qs({ tipo: s.id })}">${esc(s.name)}</a>`))
-      : [`<a class="chip is-active" href="equipamiento">Todo</a>`].concat(D.categories.map((c) => `<a class="chip" href="equipamiento/${c.id}">${esc(c.name)}</a>`));
-    const title = cat ? cat.name : 'Equipamiento';
-    const crumbItems = cat ? [['Inicio', './'], ['Equipamiento', 'equipamiento'], [cat.name]] : [['Inicio', './'], ['Equipamiento']];
+      ? [`<a class="chip ${!f.sub ? 'is-active' : ''}" href="${qs({ tipo: '' })}">Todo</a>`].concat(subsShown.map((s) => `<a class="chip ${f.sub === s.id ? 'is-active' : ''}" href="${qs({ tipo: s.id })}">${esc(s.name)}</a>`))
+      : [`<a class="chip is-active" href="${base}">Todo</a>`].concat(D.categories.map((c) => `<a class="chip" href="${withWater(`equipamiento/${c.id}`, water)}">${esc(c.name)}</a>`));
+    const crumbItems = [['Inicio', './'], ['Equipamiento', 'equipamiento']].concat(water ? [[water.name, cat ? `equipamiento/${water.slug}` : null]] : []).concat(cat ? [[cat.name]] : []);
+    if (!cat && !water) crumbItems[1] = ['Equipamiento'];
+    const catList = (c, i) => {
+      const subs = c.sub.filter((s) => !water || D.products.some((p) => p.category === c.id && p.sub === s.id && inCtx(p)));
+      const sample = D.products.find((p) => p.category === c.id && inCtx(p));
+      return `<a class="cat reveal" href="${withWater(`equipamiento/${c.id}`, water)}"><div class="cat__name"><small>0${i + 1}</small>${esc(c.name)}</div><div class="cat__sub">${subs.map((s) => esc(s.name)).join(' · ')}</div><div class="cat__media media">${sample ? prodArt(sample) : ''}</div></a>`;
+    };
+    const waterTiles = `<section class="section--tight" style="padding-bottom:clamp(40px,5vw,72px)"><div class="wrap"><div class="tiles tiles--2">${WATERS.map((w, i) => tile({ name: w.name, scene: w.scene, id: 'eq-' + w.id, photo: w.photo }, `equipamiento/${w.slug}`, w.claim, i, 'Equipamiento')).join('')}</div></div></section>`;
     const intro = cat
-      ? pageHero({ eyebrow: 'Equipamiento', title: cat.name, lede: cat.claim + ' ' + cat.intro, scene: { scene: cat.scene, id: 'cat-' + cat.id, photo: cat.photo }, crumbsHtml: crumbs(crumbItems) })
-      : `<section class="page-head"><div class="wrap">${crumbs(crumbItems)}<h1 class="display">Equipamiento</h1><p class="lede">Señuelos, cañas, carretes, líneas y accesorios. Una selección pensada para funcionar como un sistema.</p></div></section>
-        <section><div class="wrap"><div class="cats">${D.categories.map((c, i) => `<a class="cat reveal" href="equipamiento/${c.id}"><div class="cat__name"><small>0${i + 1}</small>${esc(c.name)}</div><div class="cat__sub">${c.sub.map((s) => esc(s.name)).join(' · ')}</div><div class="cat__media media">${prodArt(D.products.find((p) => p.category === c.id))}</div></a>`).join('')}</div></div></section>`;
+      ? pageHero({ eyebrow: water ? `Equipamiento · ${water.name}` : 'Equipamiento', title: cat.name, lede: cat.claim + ' ' + cat.intro, scene: { scene: cat.scene, id: 'cat-' + cat.id, photo: cat.photo }, crumbsHtml: crumbs(crumbItems) })
+      : `<section class="page-head"><div class="wrap">${crumbs(crumbItems)}${water ? '<div class="eyebrow" style="margin-bottom:18px">Equipamiento</div>' : ''}<h1 class="display">${esc(water ? water.name : 'Equipamiento')}</h1><p class="lede">${esc(water ? water.intro : 'Señuelos, cañas, carretes, líneas y accesorios. Una selección pensada para funcionar como un sistema.')}</p></div></section>
+        ${water ? '' : waterTiles}
+        <section><div class="wrap"><div class="cats">${D.categories.filter((c) => !water || D.products.some((p) => p.category === c.id && inCtx(p))).map(catList).join('')}</div></div></section>`;
     return {
-      title: cat ? `${cat.name} de pesca · Equipamiento` : 'Equipamiento de pesca',
-      description: cat ? `${cat.claim} ${cat.intro}` : 'Catálogo VESCORA: señuelos, cañas, carretes, líneas y accesorios de pesca, organizados por técnica y especie.',
+      title: cat ? `${cat.name} de pesca${water ? ' · ' + water.name : ''} · Equipamiento` : water ? `Equipamiento de pesca en ${water.name.toLowerCase()}` : 'Equipamiento de pesca',
+      description: cat ? `${cat.claim} ${cat.intro}` : water ? `Equipamiento VESCORA para pesca en ${water.name.toLowerCase()}: ${water.claim}` : 'Catálogo VESCORA: señuelos, cañas, carretes, líneas y accesorios de pesca en agua dulce y salada, organizados por técnica y especie.',
       over: !!cat,
       html: `${intro}
       <section class="section" style="padding-top:${cat ? 'clamp(40px,5vw,72px)' : 'clamp(56px,7vw,96px)'}">
         <div class="wrap">
-          <div class="toolbar"><div class="toolbar__row">
+          <div class="toolbar">
+            ${waterSwitch(water, waterHref)}
+            <div class="toolbar__row">
             <div class="chips chips--scroll" style="flex:1;min-width:0">${chipsTop.join('')}</div>
             <div class="toolbar__selects">
               <label class="sr-only" for="f-tec">Técnica</label>
-              <select id="f-tec" data-filter="tecnica"><option value="">Todas las técnicas</option>${D.techniques.map((t) => `<option value="${t.id}" ${f.tec === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>
+              <select id="f-tec" data-filter="tecnica"><option value="">Todas las técnicas</option>${D.techniques.filter((t) => inWater(t, ws)).map((t) => `<option value="${t.id}" ${f.tec === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>
               <label class="sr-only" for="f-esp">Especie</label>
-              <select id="f-esp" data-filter="especie"><option value="">Todas las especies</option>${D.species.map((s) => `<option value="${s.id}" ${f.esp === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select>
+              <select id="f-esp" data-filter="especie"><option value="">Todas las especies</option>${WATERS.filter((w) => !ws || ws.includes(w.id)).map((w) => `<optgroup label="${esc(w.name)}">${D.species.filter((s) => wOf(s).includes(w.id)).map((s) => `<option value="${s.id}" ${f.esp === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}</select>
             </div>
           </div></div>
-          <div class="head-row" style="margin-bottom:28px"><span class="count">${list.length} ${list.length === 1 ? 'producto' : 'productos'}</span>${f.tec ? `<a class="link-arrow" href="tecnicas/${f.tec}">Guía de ${esc(TECH[f.tec].name)} ${arrow}</a>` : ''}</div>
+          <div class="head-row" style="margin-bottom:28px"><span class="count">${list.length} ${list.length === 1 ? 'producto' : 'productos'}</span>${f.tec && TECH[f.tec] ? `<a class="link-arrow" href="${withWater(`tecnicas/${f.tec}`, water)}">Guía de ${esc(TECH[f.tec].name)} ${arrow}</a>` : ''}</div>
           ${list.length ? `<div class="grid grid--4">${list.map(card).join('')}</div>` : `<p class="empty">No hay productos con estos filtros. <a class="link-arrow" href="${base}">Ver todo ${arrow}</a></p>`}
         </div>
       </section>`,
@@ -330,7 +403,7 @@
     const cat = CAT[p.category];
     const crumbItems = [['Inicio', './'], ['Equipamiento', 'equipamiento'], [cat.name, `equipamiento/${cat.id}`], [p.name]];
     const quick = [[p.category === 'canas' ? 'Longitud' : 'Medida', p.length], [p.category === 'canas' ? 'Lance' : 'Peso', p.specs.Peso || p.specs['Acción de lance'] || '—'], ['Tipo', p.type]];
-    const specs = Object.assign({}, p.specs, { 'Técnica recomendada': p.techniques.map((t) => TECH[t].name).join(', ') }, p.species.length ? { 'Especies objetivo': p.species.map((s) => SPEC[s].name).join(', ') } : {});
+    const specs = Object.assign({}, p.specs, { 'Tipo de agua': waterNames(p), 'Técnica recomendada': p.techniques.map((t) => TECH[t].name).join(', ') }, p.species.length ? { 'Especies objetivo': p.species.map((s) => SPEC[s].name).join(', ') } : {});
     const related = (p.related || []).map((r) => PROD[r]).filter(Boolean);
     const family = p.family ? D.products.filter((x) => x.family === p.family) : [];
     const sameCat = D.products.filter((x) => x.id !== p.id && x.sub === p.sub && x.category === p.category && (!p.family || x.family !== p.family)).slice(0, 4);
@@ -418,13 +491,30 @@
     };
   };
 
-  V.techniques = () => ({
-    title: 'Técnicas de pesca · Elige tu técnica',
-    description: 'Spinning, light spinning, rockfishing, eging, surfcasting y pesca desde embarcación: equipamiento recomendado para cada técnica.',
-    html: `<section class="page-head"><div class="wrap">${crumbs([['Inicio', './'], ['Técnicas']])}<h1 class="display">Elige tu técnica</h1><p class="lede">Cada técnica es una forma distinta de leer el agua. Descubre qué equipo necesitas para cada una.</p></div></section>
-      <section class="section" style="padding-top:0"><div class="wrap"><div class="tiles">${D.techniques.map((t, i) => tile(t, `tecnicas/${t.id}`, t.claim, i)).join('')}</div></div></section>`,
-    ld: ldCrumbs([['Inicio', './'], ['Técnicas']])
-  });
+  // Listado agrupado por tipo de agua. Una entidad multiagua aparece en ambos grupos, pero es la misma.
+  function waterGrouped(items, only, hrefFor, metaFor) {
+    return WATERS.filter((w) => !only || only.id === w.id).map((w) => {
+      const list = items.filter((x) => wOf(x).includes(w.id));
+      if (!list.length) return '';
+      return `<section class="section water-group" style="padding-top:0"><div class="wrap">
+        <div class="head-row reveal" style="margin-bottom:28px"><div><div class="eyebrow">${esc(w.claim)}</div><h2 class="h2" style="margin-top:14px">${esc(w.name)}</h2></div>${only ? '' : `<a class="link-arrow" href="${hrefFor(null, w)}">Ver ${esc(w.name.toLowerCase())} ${arrow}</a>`}</div>
+        <div class="tiles">${list.map((x, i) => tile(x, hrefFor(x, w), metaFor(x), i, wOf(x).length > 1 ? waterNames(x) : '')).join('')}</div>
+      </div></section>`;
+    }).join('');
+  }
+
+  V.techniques = (waterSlug) => {
+    const water = waterSlug ? WATER_BY_Q[waterSlug] : null;
+    const ci = [['Inicio', './'], ['Técnicas', water ? 'tecnicas' : null]].concat(water ? [[water.name]] : []);
+    return {
+      title: water ? `Técnicas de pesca en ${water.name.toLowerCase()}` : 'Técnicas de pesca · Elige tu técnica',
+      description: water ? `Técnicas de pesca en ${water.name.toLowerCase()} y el equipamiento recomendado para cada una.` : 'Spinning, light spinning, fly fishing, carpfishing, rockfishing, eging, surfcasting y embarcación: equipamiento recomendado para cada técnica.',
+      html: `<section class="page-head"><div class="wrap">${crumbs(ci)}<h1 class="display">${water ? esc(water.name) : 'Elige tu técnica'}</h1><p class="lede">Cada técnica es una forma distinta de leer el agua. Descubre qué equipo necesitas para cada una.</p>
+        <div style="margin-top:32px">${waterSwitch(water, (w) => (w ? `tecnicas/${w.slug}` : 'tecnicas'), 'Todas')}</div></div></section>
+        ${waterGrouped(D.techniques, water, (t, w) => (t ? `tecnicas/${t.id}?agua=${w.q}` : `tecnicas/${w.slug}`), (t) => t.claim)}`,
+      ld: ldCrumbs(ci)
+    };
+  };
 
   function gearGroups(list, labelFor) {
     const groups = [['canas', 'Cañas y carretes', ['canas', 'carretes']], ['senuelos', 'Señuelos', ['senuelos']], ['lineas', 'Líneas', ['lineas']], ['accesorios', 'Accesorios', ['accesorios']]];
@@ -435,33 +525,39 @@
     }).join('');
   }
 
-  V.technique = (id) => {
+  V.technique = (id, q) => {
     const t = TECH[id];
     if (!t) return V.notFound();
-    const list = productsFor('techniques', id);
-    const sp = D.species.filter((s) => s.techniques.includes(id));
-    const ci = [['Inicio', './'], ['Técnicas', 'tecnicas'], [t.name]];
+    const multi = wOf(t).length > 1;
+    // El agua de contexto solo aplica si la técnica la admite (p. ej. Spinning en agua dulce).
+    const pw = waterParam(q);
+    const water = pw && inWater(t, [pw.id]) ? pw : singleWater(t);
+    const ws = water ? [water.id] : null;
+    const list = productsFor('techniques', id).filter((p) => inWater(p, ws));
+    const sp = D.species.filter((s) => s.techniques.includes(id) && inWater(s, ws));
+    const ci = [['Inicio', './'], ['Técnicas', 'tecnicas']].concat(water ? [[water.name, `tecnicas/${water.slug}`]] : []).concat([[t.name]]);
+    const filterQ = 'tecnica=' + t.id + (water ? '&agua=' + water.q : '');
     return {
-      title: `${t.name} · Equipamiento recomendado`,
+      title: `${t.name}${multi && water ? ' en ' + water.name.toLowerCase() : ''} · Equipamiento recomendado`,
       description: `${t.claim} ${t.intro}`.slice(0, 158),
       over: true,
-      html: `${pageHero({ eyebrow: 'Técnica', title: t.name, lede: t.claim, scene: { scene: t.scene, id: 'tech-' + t.id, photo: t.photo }, crumbsHtml: crumbs(ci) })}
+      html: `${pageHero({ eyebrow: `Técnica · ${waterNames(t)}`, title: t.name, lede: t.claim, scene: { scene: t.scene, id: 'tech-' + t.id, photo: t.photo }, crumbsHtml: crumbs(ci) })}
       <section class="section section--dark on-dark" style="padding-top:clamp(48px,6vw,88px)">
         <div class="wrap">
           <div class="intro-grid"><div class="eyebrow">Qué es</div><p class="big reveal">${esc(t.intro)}</p></div>
           <dl class="facts">
             <div><dt>Tipo de pesca</dt><dd>${esc(t.type)}</dd></div><div><dt>Escenario habitual</dt><dd>${esc(t.scenario)}</dd></div>
-            ${t.gear.slice(0, 2).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
-            ${t.gear.slice(2).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
-            <div><dt>Especies habituales</dt><dd>${sp.map((s) => esc(s.name)).join(', ')}</dd></div>
-            <div><dt>Productos Vescora</dt><dd>${list.length}</dd></div>
+            ${t.gear.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
+            <div><dt>Tipo de agua</dt><dd>${esc(waterNames(t))}</dd></div>
+            <div><dt>Especies habituales</dt><dd>${sp.map((s) => esc(s.name)).join(', ') || '—'}</dd></div>
           </dl>
         </div>
       </section>
-      <section class="section">
+      <section class="section" id="equipo">
         <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Guía práctica</div><h2 class="h2" style="margin-top:18px">Equipamiento recomendado</h2></div><a class="btn" href="equipamiento?tecnica=${t.id}">Explorar equipamiento de ${esc(t.name)} ${arrow}</a></div>
-          ${gearGroups(list, 'tecnica=' + t.id)}
+          <div class="head-row reveal"><div><div class="eyebrow">Guía práctica</div><h2 class="h2" style="margin-top:18px">Equipamiento recomendado</h2></div><a class="btn" href="${withWater(`equipamiento?tecnica=${t.id}`, water)}">Explorar equipamiento de ${esc(t.name)} ${arrow}</a></div>
+          ${multi ? `<div style="margin:-12px 0 36px">${waterSwitch(water, (w) => `tecnicas/${t.id}${w ? '?agua=' + w.q : ''}#equipo`)}</div>` : ''}
+          ${list.length ? gearGroups(list, filterQ) : `<p class="empty">Todavía no hay equipamiento VESCORA para ${esc(t.name)}${water ? ' en ' + esc(water.name.toLowerCase()) : ''}.</p>`}
         </div>
       </section>
       <section class="section section--paper2">
@@ -470,48 +566,56 @@
           <ol class="tips">${t.tips.map((x) => `<li class="reveal">${esc(x)}</li>`).join('')}</ol>
         </div>
       </section>
-      <section class="section">
+      ${sp.length ? `<section class="section">
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">Especies</div><h2 class="h2" style="margin-top:18px">Qué pescar con ${esc(t.name)}</h2></div></div>
           <div class="tiles tiles--4">${sp.map((s, i) => tile(s, `especies/${s.id}`, s.claim, i)).join('')}</div>
-          <div style="margin-top:48px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn" href="equipamiento?tecnica=${t.id}">Explorar equipamiento de ${esc(t.name)} ${arrow}</a><a class="btn btn--ghost" href="tu-equipo?technique=${t.id}"><span>Montar mi equipo</span></a></div>
+          <div style="margin-top:48px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn" href="${withWater(`equipamiento?tecnica=${t.id}`, water)}">Explorar equipamiento de ${esc(t.name)} ${arrow}</a><a class="btn btn--ghost" href="tu-equipo"><span>Montar mi equipo</span></a></div>
         </div>
-      </section>`,
+      </section>` : ''}`,
       ld: [ldCrumbs(ci), { '@context': 'https://schema.org', '@type': 'Article', headline: `${t.name}: equipamiento recomendado`, about: t.name, publisher: { '@type': 'Organization', name: 'VESCORA' } }]
     };
   };
 
-  V.speciesList = () => ({
-    title: 'Especies · ¿Qué quieres pescar?',
-    description: 'Lubina, jurel, dorada, anjova, calamar y otros cefalópodos y depredadores: técnicas y equipamiento recomendado para cada especie.',
-    html: `<section class="page-head"><div class="wrap">${crumbs([['Inicio', './'], ['Especies']])}<h1 class="display">¿Qué quieres pescar?</h1><p class="lede">Elige una especie y descubre las técnicas, señuelos y líneas que mejor funcionan para ella.</p></div></section>
-      <section class="section" style="padding-top:0"><div class="wrap"><div class="tiles">${D.species.map((s, i) => tile(s, `especies/${s.id}`, s.claim, i)).join('')}</div></div></section>`,
-    ld: ldCrumbs([['Inicio', './'], ['Especies']])
-  });
+  V.speciesList = (waterSlug) => {
+    const water = waterSlug ? WATER_BY_Q[waterSlug] : null;
+    const ci = [['Inicio', './'], ['Especies', water ? 'especies' : null]].concat(water ? [[water.name]] : []);
+    return {
+      title: water ? `Especies de ${water.name.toLowerCase()} · ¿Qué quieres pescar?` : 'Especies · ¿Qué quieres pescar?',
+      description: water ? `Especies de ${water.name.toLowerCase()}: técnicas y equipamiento recomendado para cada una.` : 'Lubina, jurel, dorada, calamar, trucha, black bass, lucio, carpa y más: técnicas y equipamiento recomendado para cada especie.',
+      html: `<section class="page-head"><div class="wrap">${crumbs(ci)}<h1 class="display">${water ? esc(water.name) : '¿Qué quieres pescar?'}</h1><p class="lede">Elige una especie y descubre las técnicas, señuelos y líneas que mejor funcionan para ella.</p>
+        <div style="margin-top:32px">${waterSwitch(water, (w) => (w ? `especies/${w.slug}` : 'especies'), 'Todas')}</div></div></section>
+        ${waterGrouped(D.species, water, (s, w) => (s ? `especies/${s.id}` : `especies/${w.slug}`), (s) => s.claim)}`,
+      ld: ldCrumbs(ci)
+    };
+  };
 
   V.species = (id) => {
     const s = SPEC[id];
     if (!s) return V.notFound();
+    const water = singleWater(s);
     const list = productsFor('species', id);
-    const ci = [['Inicio', './'], ['Especies', 'especies'], [s.name]];
+    const ci = [['Inicio', './'], ['Especies', 'especies']].concat(water ? [[water.name, `especies/${water.slug}`]] : []).concat([[s.name]]);
     return {
       title: `${s.name} · Técnicas y equipamiento recomendado`,
       description: `${s.claim} ${s.intro}`.slice(0, 158),
       over: true,
-      html: `${pageHero({ eyebrow: s.latin, title: s.name, lede: s.claim, scene: { scene: s.scene, id: 'sp-' + s.id, photo: s.photo }, crumbsHtml: crumbs(ci) })}
+      html: `${pageHero({ eyebrow: `${s.latin} · ${waterNames(s)}`, title: s.name, lede: s.claim, scene: { scene: s.scene, id: 'sp-' + s.id, photo: s.photo }, crumbsHtml: crumbs(ci) })}
       <section class="section">
         <div class="wrap intro-grid">
           <div class="eyebrow">Comportamiento</div>
           <div><p class="big reveal">${esc(s.intro)}</p>
             <div class="block-title" style="margin-top:40px">Técnicas recomendadas</div>
-            <div class="chips">${s.techniques.map((t) => `<a class="chip" href="tecnicas/${t}">${esc(TECH[t].name)} ↗</a>`).join('')}</div>
+            <div class="chips">${s.techniques.filter((t) => TECH[t]).map((t) => `<a class="chip" href="${withWater(`tecnicas/${t}`, water)}">${esc(TECH[t].name)} ↗</a>`).join('')}</div>
+            <div class="block-title" style="margin-top:28px">Escenarios</div>
+            <div class="chips">${scenariosFor(id).map((c) => `<span class="chip" style="cursor:default">${esc(c.name)}</span>`).join('')}</div>
           </div>
         </div>
       </section>
       <section class="section section--paper2">
         <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Equipamiento</div><h2 class="h2" style="margin-top:18px">Para pescar ${esc(s.name.toLowerCase())}</h2></div><a class="btn" href="equipamiento?especie=${s.id}">Ver todo ${arrow}</a></div>
-          ${gearGroups(list, 'especie=' + s.id)}
+          <div class="head-row reveal"><div><div class="eyebrow">Equipamiento</div><h2 class="h2" style="margin-top:18px">Para pescar ${esc(s.name.toLowerCase())}</h2></div><a class="btn" href="${withWater(`equipamiento?especie=${s.id}`, water)}">Ver todo ${arrow}</a></div>
+          ${list.length ? gearGroups(list, 'especie=' + s.id + (water ? '&agua=' + water.q : '')) : `<p class="empty">Todavía no hay equipamiento VESCORA específico para ${esc(s.name.toLowerCase())}.</p>`}
         </div>
       </section>
       <section class="section">
@@ -537,6 +641,7 @@
     if (init.scenario && !COND[init.scenario]) init.scenario = '';
     if (init.technique && !TECH[init.technique]) init.technique = '';
     if (init.band && !BANDS[init.band]) init.band = '';
+    if (init.species) cleanFinder(init);
     return {
       title: 'Tu equipo · Qué necesito para pescar',
       description: 'Elige especie, escenario, técnica y gramaje: VESCORA te propone un equipo de partida con señuelo, montaje, línea y conexión.',
@@ -745,9 +850,10 @@
   let INDEX;
   function buildIndex() {
     INDEX = [];
-    D.products.forEach((p) => INDEX.push({ type: 'Productos', title: p.name, sub: `${p.type} · ${specLine(p)}`, url: pUrl(p), p, text: norm([p.name, p.type, p.summary, CAT[p.category].name, subName(p), p.length, p.weight != null ? p.weight + ' g' : '', Object.values(p.specs).join(' '), p.techniques.map((t) => TECH[t].name).join(' '), p.species.map((s) => SPEC[s].name).join(' '), p.conditions.map((c) => COND[c].name).join(' ')].join(' ')), key: norm(p.name + ' ' + p.type + ' ' + subName(p)) }));
-    D.techniques.forEach((t) => INDEX.push({ type: 'Técnicas', title: t.name, sub: t.claim, url: 'tecnicas/' + t.id, o: t, text: norm([t.name, t.claim, t.intro, t.scenario].join(' ')), key: norm(t.name) }));
-    D.species.forEach((s) => INDEX.push({ type: 'Especies', title: s.name, sub: s.claim, url: 'especies/' + s.id, o: s, text: norm([s.name, s.latin, s.claim, s.intro].join(' ')), key: norm(s.name) }));
+    D.products.forEach((p) => INDEX.push({ type: 'Productos', title: p.name, sub: `${p.type} · ${specLine(p)}`, url: pUrl(p), p, text: norm([p.name, p.type, p.summary, CAT[p.category].name, subName(p), p.length, p.weight != null ? p.weight + ' g' : '', Object.values(p.specs).join(' '), p.techniques.map((t) => TECH[t].name).join(' '), p.species.map((s) => SPEC[s].name).join(' '), p.conditions.map((c) => COND[c].name).join(' '), waterNames(p)].join(' ')), key: norm(p.name + ' ' + p.type + ' ' + subName(p)) }));
+    D.techniques.forEach((t) => INDEX.push({ type: 'Técnicas', title: t.name, sub: t.claim, url: 'tecnicas/' + t.id, o: t, text: norm([t.name, t.claim, t.intro, t.scenario, waterNames(t)].join(' ')), key: norm(t.name) }));
+    D.species.forEach((s) => INDEX.push({ type: 'Especies', title: s.name, sub: s.claim, url: 'especies/' + s.id, o: s, text: norm([s.name, s.latin, s.claim, s.intro, waterNames(s)].join(' ')), key: norm(s.name) }));
+    WATERS.forEach((w) => [['Equipamiento', 'equipamiento'], ['Técnicas', 'tecnicas'], ['Especies', 'especies']].forEach(([t, u]) => INDEX.push({ type: 'Categorías', title: `${t} · ${w.name}`, sub: w.claim, url: `${u}/${w.slug}`, text: norm(`${t} ${w.name} ${w.claim}`), key: norm(`${w.name} ${t}`) })));
     D.categories.forEach((c) => {
       INDEX.push({ type: 'Categorías', title: c.name, sub: c.claim, url: 'equipamiento/' + c.id, text: norm(c.name + ' ' + c.intro), key: norm(c.name) });
       c.sub.forEach((s) => INDEX.push({ type: 'Categorías', title: `${c.name} · ${s.name}`, sub: c.name, url: `equipamiento/${c.id}?tipo=${s.id}`, text: norm(s.name + ' ' + c.name), key: norm(s.name) }));
@@ -811,9 +917,9 @@
     const s = path.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean).map(decodeURIComponent);
     const [a, b, c] = s;
     if (!a) return V.home();
-    if (a === 'equipamiento') return c ? V.product(b, c) : V.catalog(b, q);
-    if (a === 'tecnicas') return b ? V.technique(b) : V.techniques();
-    if (a === 'especies') return b ? V.species(b) : V.speciesList();
+    if (a === 'equipamiento') return c ? V.product(b, c) : isWaterSlug(b) ? V.catalog(null, q, b) : V.catalog(b, q);
+    if (a === 'tecnicas') return c ? V.notFound() : !b ? V.techniques() : isWaterSlug(b) ? V.techniques(b) : V.technique(b, q);
+    if (a === 'especies') return c ? V.notFound() : !b ? V.speciesList() : isWaterSlug(b) ? V.speciesList(b) : V.species(b);
     if (a === 'tu-equipo' && !b) return V.finder(q);
     if (a === 'vescora') return b === 'filosofia' ? V.philosophy() : b ? V.notFound() : V.about();
     if (a === 'journal') return b ? V.article(b) : V.journal(q);
@@ -914,9 +1020,9 @@
     <div class="menu__grid">
       <nav class="menu__main" aria-label="Menú principal">${[['Equipamiento', 'equipamiento'], ['Técnicas', 'tecnicas'], ['Especies', 'especies'], ['Tu equipo', 'tu-equipo'], ['Vescora', 'vescora'], ['Journal', 'journal'], ['Contacto', 'contacto']].map(([t, u], i) => `<a href="${u}"><small>0${i + 1}</small>${t}</a>`).join('')}</nav>
       <div class="menu__cols">
-        <div><h4>Equipamiento${lines.length > 1 ? '' : ' · ' + esc(lines[0].name)}</h4>${D.categories.map((c) => `<a href="equipamiento/${c.id}">${esc(c.name)}</a>`).join('')}</div>
-        <div><h4>Técnicas</h4>${D.techniques.map((t) => `<a href="tecnicas/${t.id}">${esc(t.name)}</a>`).join('')}</div>
-        <div><h4>Especies</h4>${D.species.map((s) => `<a href="especies/${s.id}">${esc(s.name)}</a>`).join('')}</div>
+        <div><h4>Equipamiento${lines.length > 1 ? '' : ' · ' + esc(lines[0].name)}</h4>${WATERS.map((w) => `<a class="menu__water" href="equipamiento/${w.slug}">${esc(w.name)}</a>`).join('')}${D.categories.map((c) => `<a href="equipamiento/${c.id}">${esc(c.name)}</a>`).join('')}</div>
+        <div><h4>Técnicas</h4>${WATERS.map((w) => `<a class="menu__water" href="tecnicas/${w.slug}">${esc(w.name)}</a>${D.techniques.filter((t) => wOf(t).includes(w.id)).map((t) => `<a href="tecnicas/${t.id}?agua=${w.q}">${esc(t.name)}</a>`).join('')}`).join('')}</div>
+        <div><h4>Especies</h4>${WATERS.map((w) => `<a class="menu__water" href="especies/${w.slug}">${esc(w.name)}</a>${D.species.filter((s) => wOf(s).includes(w.id)).map((s) => `<a href="especies/${s.id}">${esc(s.name)}</a>`).join('')}`).join('')}</div>
         <div><h4>Vescora</h4><a href="vescora">Quiénes somos</a><a href="vescora/filosofia">Filosofía</a><a href="journal">Journal</a></div>
         <div><h4>Síguenos</h4><a href="${esc(D.site.instagram)}" target="_blank" rel="noopener">Instagram ${ext}</a><a href="mailto:${esc(D.site.email)}">${esc(D.site.email)}</a></div>
       </div>
