@@ -51,9 +51,9 @@
   const crumbs = (items) => `<nav class="crumbs" aria-label="Migas de pan">${items.map(([t, u], i) => (i ? '<span aria-hidden="true">/</span>' : '') + (u ? `<a href="${u}">${esc(t)}</a>` : `<span aria-current="page">${esc(t)}</span>`)).join('')}</nav>`;
   const ldCrumbs = (items) => ({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items.map(([t, u], i) => ({ '@type': 'ListItem', position: i + 1, name: t, item: D.site.domain + '/' + (u || '').replace(/^\.\//, '') })) });
 
-  function pageHero({ eyebrow, title, lede, scene, crumbsHtml = '', extra = '' }) {
-    return `<section class="page-hero">
-      <div class="page-hero__media">${sceneMedia(scene, '', title)}</div>
+  function pageHero({ eyebrow, title, lede, scene, crumbsHtml = '', extra = '', solid = false }) {
+    return `<section class="page-hero${solid ? ' page-hero--solid' : ''}">
+      ${solid ? '' : `<div class="page-hero__media">${sceneMedia(scene, '', title)}</div>`}
       <div class="wrap page-hero__content">
         ${crumbsHtml}
         ${eyebrow ? `<div class="eyebrow on-dark" style="color:rgba(245,243,236,.75)">${esc(eyebrow)}</div>` : ''}
@@ -366,7 +366,7 @@
     };
     const waterTiles = `<section class="section--tight" style="padding-bottom:clamp(40px,5vw,72px)"><div class="wrap"><div class="tiles tiles--2">${WATERS.map((w, i) => tile({ name: w.name, scene: w.scene, id: 'eq-' + w.id, photo: w.photo }, `equipamiento/${w.slug}`, w.claim, i, 'Equipamiento')).join('')}</div></div></section>`;
     const intro = cat
-      ? pageHero({ eyebrow: water ? `Equipamiento · ${water.name}` : 'Equipamiento', title: cat.name, lede: cat.claim + ' ' + cat.intro, scene: { scene: cat.scene, id: 'cat-' + cat.id, photo: cat.photo }, crumbsHtml: crumbs(crumbItems) })
+      ? pageHero({ eyebrow: water ? `Equipamiento · ${water.name}` : 'Equipamiento', title: cat.name, lede: cat.claim + ' ' + cat.intro, scene: { scene: cat.scene, id: 'cat-' + cat.id, photo: cat.photo }, crumbsHtml: crumbs(crumbItems), solid: true })
       : `<section class="page-head"><div class="wrap">${crumbs(crumbItems)}${water ? '<div class="eyebrow" style="margin-bottom:18px">Equipamiento</div>' : ''}<h1 class="display">${esc(water ? water.name : 'Equipamiento')}</h1><p class="lede">${esc(water ? water.intro : 'Señuelos, cañas, carretes, líneas y accesorios. Una selección pensada para funcionar como un sistema.')}</p></div></section>
         ${water ? '' : waterTiles}
         <section><div class="wrap"><div class="cats">${D.categories.filter((c) => !water || D.products.some((p) => p.category === c.id && inCtx(p))).map(catList).join('')}</div></div></section>`;
@@ -418,7 +418,7 @@
         <div class="product__gallery">
           ${crumbs(crumbItems)}
           <div class="gallery__main${p.photo ? ' is-photo' : ''}" id="gmain">${prodArt(p)}</div>
-          ${p.photos && p.photos.length > 1 ? `<div class="gallery__thumbs gallery__thumbs--photos" role="group" aria-label="Fotos del producto">${p.photos.map((src, i) => `<button type="button" data-photo="${esc(src)}" aria-pressed="${i === 0}" aria-label="Foto ${i + 1}"><img src="${esc(src)}" alt="" loading="lazy" decoding="async"></button>`).join('')}</div>` : family.length > 1 ? `<div class="colorways"><div class="block-title">Colores · ${family.length}</div><div class="gallery__thumbs gallery__thumbs--colors">${family.map((f) => `<a href="${pUrl(f)}" ${f.id === p.id ? 'aria-current="true"' : ''} title="${esc(f.color)}">${prodArt(f)}<span>${esc(f.color)}</span></a>`).join('')}</div></div>` : p.photo ? '' : `<div class="gallery__thumbs" role="group" aria-label="Vistas del producto">
+          ${p.photos && p.photos.length > 1 ? `<div class="gallery__thumbs gallery__thumbs--photos" style="grid-template-columns:repeat(${Math.min(p.photos.length, 6)},1fr)" role="group" aria-label="Fotos del producto">${p.photos.map((src, i) => `<button type="button" data-photo="${esc(src)}" aria-pressed="${i === 0}" aria-label="Foto ${i + 1}"><img src="${esc(src)}" alt="" loading="lazy" decoding="async"></button>`).join('')}</div>` : family.length > 1 ? `<div class="colorways"><div class="block-title">${p.variant ? 'Versiones' : 'Colores'} · ${family.length}</div><div class="gallery__thumbs gallery__thumbs--colors">${family.map((f) => `<a href="${pUrl(f)}" ${f.id === p.id ? 'aria-current="true"' : ''} title="${esc(f.variant || f.color)}">${prodArt(f)}<span>${esc(f.variant || f.color)}</span></a>`).join('')}</div></div>` : p.photo ? '' : `<div class="gallery__thumbs" role="group" aria-label="Vistas del producto">
             <button type="button" data-view="light" aria-pressed="true" aria-label="Vista de estudio">${A.product(p)}</button>
             <button type="button" data-view="dark" class="t-dark" aria-pressed="false" aria-label="Vista en fondo oscuro">${A.product(p)}</button>
             <button type="button" data-view="scene" class="t-scene" aria-pressed="false" aria-label="Vista en su escenario">${A.scene(sceneKey, { seed: p.id, label: 'Escenario' })}</button>
@@ -431,6 +431,7 @@
           </div>
           <dl class="quick">${quick.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
           <div><p class="lede" style="max-width:none">${esc(p.summary)}</p><p class="muted" style="margin-top:14px">${esc(p.description)}</p></div>
+          ${family.length > 1 && p.photos ? `<div><h2 class="block-title">Versiones</h2><div class="chips">${family.map((f) => `<a class="chip ${f.id === p.id ? 'is-active' : ''}" href="${pUrl(f)}" ${f.id === p.id ? 'aria-current="page"' : ''}>${esc(f.variant || f.name)}</a>`).join('')}</div></div>` : ''}
           <div class="recommended">
             <div><h2 class="block-title">Técnicas</h2><div class="chips">${p.techniques.map((t) => `<a class="chip" href="tecnicas/${t}">${esc(TECH[t].name)}</a>`).join('')}</div></div>
             ${p.species.length ? `<div><h2 class="block-title">Especies</h2><div class="chips">${p.species.map((s) => `<a class="chip" href="especies/${s}">${esc(SPEC[s].name)}</a>`).join('')}</div></div>` : ''}

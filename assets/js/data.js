@@ -473,6 +473,40 @@
       related: ['fluoro-025', 'pe-x4-03', 'drift-762l', 'lakeside-702m', 'stream-602ul'],
       art: { k: 'softbait', c: ['#e04f9a', '#f1ecd4'] }, listings: { wallapop: '', vinted: '' }
     }),
+    P({
+      id: 'vinilos-realistas-type-a', name: 'Pack 5 Vinilos Realistas · Type A', family: 'vinilos-realistas', variant: 'Type A', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Vinilos armados realistas',
+      length: '7 – 9 cm', weight: 15,
+      photo: 'assets/photos/vinilos-realistas-type-a.webp',
+      summary: 'Peces pasto realistas, listos para lanzar.',
+      description: 'Pack de 5 vinilos realistas con acabado detallado, cabeza plomada integrada, anzuelo simple dorsal y triple ventral. Imitan peces pasto con una natación muy natural y generan fuertes vibraciones que atraen a los depredadores incluso con recuperaciones lentas. Para lubina, black bass, lucio, perca, anjova, barracuda y otros depredadores, en agua dulce y salada.',
+      specs: {
+        Tipo: 'Vinilo armado · cola de pala', Contenido: '5 vinilos · 5 colores', Longitud: '7 – 9 cm', Peso: 'Desde 15 g',
+        Acción: 'Nado natural y fuerte vibración', Material: 'Silicona · cabeza plomada', Anzuelos: 'Simple dorsal + triple ventral',
+        Color: 'Plata, naranja, arcoíris, cabeza roja y perca', Profundidad: 'Media agua y fondo'
+      },
+      when: { Condiciones: 'Peces activos o apáticos', 'Tipo de agua': 'Dulce o salada', Profundidad: 'Media agua y fondo', Recuperación: 'Lineal lenta o a saltos por el fondo', Escenario: 'Costa, puertos, embarcación y embalses' },
+      techniques: ['spinning', 'embarcacion'], species: ['lubina', 'black-bass', 'lucio', 'anjova', 'depredadores'],
+      conditions: ['costa-rocosa', 'playa', 'espigon', 'puerto', 'embarcacion', 'rio', 'lago', 'embalse'],
+      related: ['vinilos-realistas-type-b', 'grapa-rapida-1', 'fluoro-025', 'pe-x8-08', 'bajo-acero-30', 'ridge-902m', 'lakeside-702m'],
+      art: { k: 'softbait', c: ['#2a2f33', '#d9dde2'] }, listings: { wallapop: '', vinted: '' }
+    }),
+    P({
+      id: 'vinilos-realistas-type-b', name: 'Pack 5 Vinilos Realistas · Type B', family: 'vinilos-realistas', variant: 'Type B', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Vinilos armados realistas',
+      length: '7 – 9 cm', weight: 15,
+      photo: 'assets/photos/vinilos-realistas-type-b.webp',
+      summary: 'Los mismos vinilos realistas, con cola rizada y colores nuevos.',
+      description: 'Pack de 5 vinilos realistas con acabado detallado, en una selección de colores distinta al Type A y con cola rizada (twister) para un nado más ondulante. Llevan cabeza plomada integrada, anzuelo simple dorsal y triple ventral. Imitan peces pasto con una natación muy natural y generan fuertes vibraciones que atraen a los depredadores incluso con recuperaciones lentas. Para lubina, black bass, lucio, perca, anjova, barracuda y otros depredadores, en agua dulce y salada.',
+      specs: {
+        Tipo: 'Vinilo armado · cola rizada (twister)', Contenido: '5 vinilos · 5 colores', Longitud: '7 – 9 cm', Peso: 'Desde 15 g',
+        Acción: 'Nado natural y fuerte vibración', Material: 'Silicona · cabeza plomada', Anzuelos: 'Simple dorsal + triple ventral',
+        Color: 'Cristal glitter, sardina azul, cabeza roja, rosa y negro plata', Profundidad: 'Media agua y fondo'
+      },
+      when: { Condiciones: 'Peces activos o apáticos', 'Tipo de agua': 'Dulce o salada', Profundidad: 'Media agua y fondo', Recuperación: 'Lineal lenta o a saltos por el fondo', Escenario: 'Costa, puertos, embarcación y embalses' },
+      techniques: ['spinning', 'embarcacion'], species: ['lubina', 'black-bass', 'lucio', 'anjova', 'depredadores'],
+      conditions: ['costa-rocosa', 'playa', 'espigon', 'puerto', 'embarcacion', 'rio', 'lago', 'embalse'],
+      related: ['vinilos-realistas-type-a', 'grapa-rapida-1', 'fluoro-025', 'pe-x8-08', 'bajo-acero-30', 'ridge-902m', 'lakeside-702m'],
+      art: { k: 'softbait', c: ['#2f5fb0', '#e6e9ee'] }, listings: { wallapop: '', vinted: '' }
+    }),
     // ——— SEÑUELOS · MINNOWS — Minnow Kingdom 105S (6 colores, misma ficha técnica)
     ...[
       ['plata-holo', 'Plata Holo', ['#9aa4b4', '#e6e9ee'], true, { wallapop: '', vinted: '', miraanuncio: '' }],
