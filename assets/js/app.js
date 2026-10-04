@@ -418,7 +418,7 @@
         <div class="product__gallery">
           ${crumbs(crumbItems)}
           <div class="gallery__main${p.photo ? ' is-photo' : ''}" id="gmain">${prodArt(p)}</div>
-          ${family.length > 1 ? `<div class="colorways"><div class="block-title">Colores · ${family.length}</div><div class="gallery__thumbs gallery__thumbs--colors">${family.map((f) => `<a href="${pUrl(f)}" ${f.id === p.id ? 'aria-current="true"' : ''} title="${esc(f.color)}">${prodArt(f)}<span>${esc(f.color)}</span></a>`).join('')}</div></div>` : p.photo ? '' : `<div class="gallery__thumbs" role="group" aria-label="Vistas del producto">
+          ${p.photos && p.photos.length > 1 ? `<div class="gallery__thumbs gallery__thumbs--photos" role="group" aria-label="Fotos del producto">${p.photos.map((src, i) => `<button type="button" data-photo="${esc(src)}" aria-pressed="${i === 0}" aria-label="Foto ${i + 1}"><img src="${esc(src)}" alt="" loading="lazy" decoding="async"></button>`).join('')}</div>` : family.length > 1 ? `<div class="colorways"><div class="block-title">Colores · ${family.length}</div><div class="gallery__thumbs gallery__thumbs--colors">${family.map((f) => `<a href="${pUrl(f)}" ${f.id === p.id ? 'aria-current="true"' : ''} title="${esc(f.color)}">${prodArt(f)}<span>${esc(f.color)}</span></a>`).join('')}</div></div>` : p.photo ? '' : `<div class="gallery__thumbs" role="group" aria-label="Vistas del producto">
             <button type="button" data-view="light" aria-pressed="true" aria-label="Vista de estudio">${A.product(p)}</button>
             <button type="button" data-view="dark" class="t-dark" aria-pressed="false" aria-label="Vista en fondo oscuro">${A.product(p)}</button>
             <button type="button" data-view="scene" class="t-scene" aria-pressed="false" aria-label="Vista en su escenario">${A.scene(sceneKey, { seed: p.id, label: 'Escenario' })}</button>
@@ -452,7 +452,7 @@
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">Ecosistema Vescora</div><h2 class="h2" style="margin-top:18px">Completa el montaje</h2></div></div>
           <div class="eco">
-            <div class="eco__now reveal"><div class="eyebrow on-dark">Estás viendo</div><div class="media">${prodArt(p)}</div><div><div class="h3" style="text-transform:uppercase">${esc(p.name)}</div><div class="small" style="opacity:.7">${esc(specLine(p))}</div></div></div>
+            <div class="eco__now reveal"><div class="eyebrow on-dark">Estás viendo</div><div class="media${p.photo ? ' is-photo' : ''}">${prodArt(p)}</div><div><div class="h3" style="text-transform:uppercase">${esc(p.name)}</div><div class="small" style="opacity:.7">${esc(specLine(p))}</div></div></div>
             <div class="reveal reveal-d1"><div class="block-title">También puedes necesitar</div><div class="eco__list">${related.map((r) => `<a class="eco__item" href="${pUrl(r)}"><span class="thumb">${prodArt(r)}</span><span><span class="kit__role">${esc(subName(r))}</span><strong>${esc(r.name)}</strong><span class="small muted">${esc(specLine(r))}</span></span><span class="eco__plus" aria-hidden="true">+</span></a>`).join('')}</div></div>
           </div>
         </div>
@@ -480,9 +480,32 @@
         additionalProperty: Object.entries(p.specs).map(([k, v]) => ({ '@type': 'PropertyValue', name: k, value: v }))
       }],
       after: (root) => {
+        // Los recuadros con foto toman el color de fondo de la foto para que la imagen encaje sin bordes.
+        const paintBg = (box) => {
+          const img = box && $('img', box);
+          if (!img) return;
+          img.loading = 'eager';
+          const paint = () => {
+            try {
+              const c = document.createElement('canvas'); c.width = c.height = 1;
+              const x = c.getContext('2d'); x.drawImage(img, 2, 2, 1, 1, 0, 0, 1, 1);
+              const [r, g, b] = x.getImageData(0, 0, 1, 1).data;
+              box.style.background = `rgb(${r},${g},${b})`;
+            } catch (e) { /* se mantiene el fondo claro por defecto */ }
+          };
+          img.complete && img.naturalWidth ? paint() : img.addEventListener('load', paint, { once: true });
+        };
+        paintBg($('.eco__now .media.is-photo', root));
+        paintBg($('#gmain.is-photo', root));
         const main = $('#gmain', root);
-        $$('.gallery__thumbs button', root).forEach((b) => b.addEventListener('click', () => {
-          $$('.gallery__thumbs button', root).forEach((x) => x.setAttribute('aria-pressed', x === b));
+        // Varias fotos: las miniaturas cambian la foto principal.
+        $$('[data-photo]', root).forEach((b) => b.addEventListener('click', () => {
+          $$('[data-photo]', root).forEach((x) => x.setAttribute('aria-pressed', x === b));
+          $('img', main).src = b.dataset.photo;
+          paintBg(main);
+        }));
+        $$('.gallery__thumbs button[data-view]', root).forEach((b) => b.addEventListener('click', () => {
+          $$('.gallery__thumbs button[data-view]', root).forEach((x) => x.setAttribute('aria-pressed', x === b));
           const v = b.dataset.view;
           main.className = 'gallery__main' + (v === 'dark' ? ' is-dark' : v === 'scene' ? ' is-scene grain' : '');
           main.innerHTML = v === 'scene' ? A.scene(sceneKey, { seed: p.id, label: 'Escenario habitual' }) + `<div class="gallery__float">${A.product(p)}</div>` : prodArt(p);

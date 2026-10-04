@@ -479,9 +479,16 @@ body.is-locked { overflow: hidden; }
 
 /* ——— Fotografía de producto ——— */
 .gallery__main.is-photo { background: #f4f3ef; }
-.gallery__main > img { width: 100%; height: 100%; object-fit: cover; }
-.thumb img, .result__media img, .cat__media img { width: 100%; height: 100%; object-fit: cover; }
-.eco__now .media > img { height: 100%; width: auto; max-width: 100%; object-fit: contain; }
+/* Las fotos de producto se muestran completas (contain), sin recortes. */
+.gallery__main > img { position: absolute; inset: 4%; width: 92%; height: 92%; object-fit: contain; }
+/* Fotos de producto (4:5): el recuadro adopta su proporción y la foto lo llena sin recortes. */
+.gallery__main.is-photo { aspect-ratio: 4 / 5; }
+.gallery__main.is-photo > img { inset: 0; width: 100%; height: 100%; }
+.thumb img, .result__media img, .cat__media img { width: 100%; height: 100%; object-fit: contain; }
+.eco__now .media { position: relative; height: 240px; }
+/* Con foto: panel claro a todo el ancho de la tarjeta; el fondo blanco de la foto se funde con él. */
+.eco__now .media.is-photo { height: clamp(260px, 32vw, 380px); margin: 0 -28px; background: #f4f3ef; }
+.eco__now .media.is-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .colorways { margin-top: 20px; }
 .gallery__thumbs--colors { grid-template-columns: repeat(3, 1fr); }
 .gallery__thumbs--colors a { position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: #f4f3ef; border: 1px solid transparent; transition: border-color var(--t); }
@@ -509,3 +516,8 @@ body.is-locked { overflow: hidden; }
 .kit__water { display: inline-block; margin-left: 8px; padding: 2px 8px; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 10px; letter-spacing: .14em; }
 .menu__cols a.menu__water { font-size: 11px; letter-spacing: .2em; text-transform: uppercase; opacity: .5; margin-top: 10px; }
 .menu__cols a.menu__water:first-of-type { margin-top: 0; }
+
+/* Galería con varias fotos */
+.gallery__thumbs--photos { grid-template-columns: repeat(5, 1fr); }
+.gallery__thumbs--photos button { aspect-ratio: 4 / 5; display: block; position: relative; background: #f4f3ef; }
+.gallery__thumbs--photos img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }

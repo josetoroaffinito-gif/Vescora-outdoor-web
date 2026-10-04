@@ -455,6 +455,24 @@
       related: ['jig-head-3', 'pe-x4-03', 'fluoro-025', 'caja-organizadora'],
       art: { k: 'pintail', c: ['#d7c98a', '#f1ecd4'] }, listings: { vinted: '' }
     }),
+    P({
+      id: 'kit-vinilos-40', name: 'Kit 40 Vinilos Paddle Tail + Caja', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Kit de vinilos con montaje',
+      length: '7 cm', weight: 9.2,
+      photo: 'assets/photos/kit-vinilos-40-caja.webp',
+      photos: ['caja', 'rosa-cristal', 'verde-chartreuse', 'oro-olivo', 'azul-naranja'].map((v) => `assets/photos/kit-vinilos-40-${v}.webp`),
+      summary: 'Todo lo necesario para montar y pescar, en una sola caja.',
+      description: 'Kit completo de 40 vinilos paddle tail en 8 colores, con 10 cabezas plomadas de 7 g, 10 grapas rápidas con giratorio y caja organizadora rígida. La cola de pala genera un nado natural desde la recuperación más lenta. Pensado para spinning en agua dulce y salada: costa, embarcación, río, lago o embalse.',
+      specs: {
+        Tipo: 'Soft swimbait · paddle tail', Contenido: '40 vinilos · 10 cabezas plomadas 7 g · 10 grapas con giratorio · caja',
+        Longitud: '7 cm aprox.', Peso: '2,2 g (vinilo) · 9,2 g montado', Acción: 'Cola de pala, nado natural',
+        Material: 'Silicona flexible y resistente', Color: '8 colores · 5 uds por color', Caja: '18 × 10 × 4 cm · 124 g', Profundidad: '0,5 – 4 m según recuperación'
+      },
+      when: { Condiciones: 'Peces activos o desconfiados', 'Tipo de agua': 'Dulce o salada', Profundidad: 'Media agua y fondo', Recuperación: 'Lineal lenta o a saltos', Escenario: 'Costa, puertos, ríos y embalses' },
+      techniques: ['spinning', 'light-spinning'], species: ['lubina', 'jurel', 'black-bass', 'trucha', 'depredadores'],
+      conditions: ['costa-rocosa', 'espigon', 'puerto', 'rio', 'lago', 'embalse'],
+      related: ['fluoro-025', 'pe-x4-03', 'drift-762l', 'lakeside-702m', 'stream-602ul'],
+      art: { k: 'softbait', c: ['#e04f9a', '#f1ecd4'] }, listings: { wallapop: '', vinted: '' }
+    }),
     // ——— SEÑUELOS · MINNOWS — Minnow Kingdom 105S (6 colores, misma ficha técnica)
     ...[
       ['plata-holo', 'Plata Holo', ['#9aa4b4', '#e6e9ee'], true, { wallapop: '', vinted: '', miraanuncio: '' }],
@@ -591,6 +609,19 @@
       art: { k: 'sabiki', c: ['#d8dde0', '#e27a6a'] }, listings: { wallapop: '', vinted: '' }
     }),
 
+    P({
+      id: 'crankbait-pack-5', name: 'Crankbait Pack 5', waterTypes: [FW, SW], category: 'senuelos', sub: 'otros', type: 'Pack de 5 crankbaits',
+      length: '10 cm', weight: 13.6,
+      photo: 'assets/photos/crankbait-pack-5.webp',
+      summary: 'Cinco colores, un kit listo para pescar.',
+      description: 'Pack de 5 crankbaits VESCORA en colores distintos para adaptarse al agua, la luz y la actividad de los peces. Babero que lo hace trabajar entre 0,5 y 1,5 m, con un nado de gran movimiento y vibración. Ideal para black bass, lucio, lucioperca y otros depredadores, tanto para quien empieza como para pescadores con experiencia.',
+      specs: { Tipo: 'Crankbait', Longitud: '10 cm', Peso: '13,6 g', Acción: 'Gran movimiento y vibración', Material: 'ABS · babero de policarbonato', Anzuelos: 'Triples nº 6', Color: '5 colores surtidos', Profundidad: '0,5 – 1,5 m', Unidades: '5' },
+      when: { Condiciones: 'Peces activos, agua tomada o con viento', 'Tipo de agua': 'Dulce o salada', Profundidad: '0,5 – 1,5 m', Recuperación: 'Lineal, chocando con piedras y estructura', Escenario: 'Embalses, lagos y ríos' },
+      techniques: ['spinning'], species: ['black-bass', 'lucio', 'depredadores'],
+      conditions: ['embalse', 'lago', 'rio'],
+      related: ['grapa-rapida-1', 'fluoro-025', 'bajo-acero-30', 'lakeside-702m', 'caja-organizadora'],
+      art: { k: 'minnow', c: ['#1b1d1e', '#d9d24a'] }, listings: { wallapop: '', vinted: '' }
+    }),
     // ——— CAÑAS
     P({
       id: 'ridge-902m', name: 'Ridge 902M', waterTypes: [SW], category: 'canas', sub: 'spinning', type: 'Caña de spinning',
