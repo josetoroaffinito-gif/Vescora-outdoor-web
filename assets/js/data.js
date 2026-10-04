@@ -33,8 +33,8 @@
     features: { commerce: false },         // Fase 2: activar precios / carrito / checkout
     // Tipos de agua. `q` es el valor del filtro (?agua=dulce) y `slug` la ruta (/equipamiento/agua-dulce).
     waterTypes: [
-      { id: FW, name: 'Agua dulce', slug: 'agua-dulce', q: 'dulce', scene: 'river', claim: 'Ríos, arroyos, lagos y embalses.', intro: 'Truchas en corriente, black bass en embalses, carpas en lagos. Equipamiento para pescar tierra adentro.' },
-      { id: SW, name: 'Agua salada', slug: 'agua-salada', q: 'salada', scene: 'coast', claim: 'Costa, puertos, playas y embarcación.', intro: 'Lubinas en la espuma, calamares bajo las luces del puerto, doradas desde la playa. Equipamiento para el mar.' }
+      { id: FW, name: 'Agua dulce', slug: 'agua-dulce', q: 'dulce', scene: 'river', photo: 'assets/photos/agua-dulce.webp', claim: 'Ríos, arroyos, lagos y embalses.', intro: 'Truchas en corriente, black bass en embalses, carpas en lagos. Equipamiento para pescar tierra adentro.' },
+      { id: SW, name: 'Agua salada', slug: 'agua-salada', q: 'salada', scene: 'coast', photo: 'assets/photos/agua-salada.webp', claim: 'Costa, puertos, playas y embarcación.', intro: 'Lubinas en la espuma, calamares bajo las luces del puerto, doradas desde la playa. Equipamiento para el mar.' }
     ],
     // Huecos que rellena "Tu equipo". Cada hueco elige el producto mejor puntuado que encaje con
     // técnica + tipo de agua (+ especie si `species`). `ifNoLure`: solo para pesca sin señuelo (cebo).
@@ -200,7 +200,7 @@
       tips: ['Usa la sonda para localizar el pasto antes de pescar.', 'Ajusta el peso del jig a la deriva y a la corriente, no solo a la profundidad.', 'Revisa nudos y anillas tras cada pez grande.']
     },
     {
-      id: 'fly-fishing', name: 'Fly Fishing', waterTypes: [FW], scene: 'river',
+      id: 'fly-fishing', name: 'Fly Fishing', waterTypes: [FW], scene: 'river', photo: 'assets/photos/tecnica-fly-fishing.webp',
       claim: 'Pesca a mosca: precisión, lectura del agua y presentaciones delicadas.',
       type: 'Pesca con mosca artificial y línea de mosca',
       scenario: 'Ríos, arroyos y lagos de montaña',
@@ -209,7 +209,7 @@
       tips: ['Observa antes de lanzar: las cebadas en superficie indican qué mosca usar.', 'Lanza aguas arriba y deja derivar la mosca de forma natural.', 'Un bajo más fino da presentaciones más discretas en aguas claras.']
     },
     {
-      id: 'carpfishing', name: 'Carpfishing', waterTypes: [FW], scene: 'forest',
+      id: 'carpfishing', name: 'Carpfishing', waterTypes: [FW], scene: 'forest', photo: 'assets/photos/tecnica-carpfishing.jpg',
       claim: 'Paciencia, cebado y equipos pensados para peces grandes.',
       type: 'Pesca a fondo con cebo y montaje de pelo',
       scenario: 'Lagos, embalses y tramos lentos de río',
@@ -320,7 +320,7 @@
     },
     // ——— AGUA DULCE. `scenarios` declara dónde vive la especie (además de lo que se deduce de los productos).
     {
-      id: 'trucha', name: 'Trucha', waterTypes: [FW], latin: 'Salmo trutta', scene: 'river',
+      id: 'trucha', name: 'Trucha', waterTypes: [FW], latin: 'Salmo trutta', scene: 'river', photo: 'assets/photos/especie-trucha.webp',
       scenarios: ['rio', 'arroyo', 'lago', 'embalse'],
       claim: 'La especie de los ríos de montaña.',
       intro: 'Depredador de aguas frías y oxigenadas. Se aposta en corrientes, pozas y remansos esperando la comida que trae el agua. Desconfiada: la presentación lo es todo.',
@@ -335,7 +335,7 @@
       ]
     },
     {
-      id: 'lucio', name: 'Lucio', waterTypes: [FW], latin: 'Esox lucius', scene: 'forest',
+      id: 'lucio', name: 'Lucio', waterTypes: [FW], latin: 'Esox lucius', scene: 'forest', photo: 'assets/photos/especie-lucio.webp',
       scenarios: ['embalse', 'lago', 'rio'],
       claim: 'Emboscada, dientes y ataques explosivos.',
       intro: 'Gran depredador de emboscada. Espera junto a vegetación y estructura para atacar a cualquier pez que pase. Sus dientes obligan a usar bajo de acero.',
@@ -350,7 +350,7 @@
       ]
     },
     {
-      id: 'black-bass', name: 'Black bass', waterTypes: [FW], latin: 'Micropterus salmoides', scene: 'forest',
+      id: 'black-bass', name: 'Black bass', waterTypes: [FW], latin: 'Micropterus salmoides', scene: 'forest', photo: 'assets/photos/especie-black-bass.webp',
       scenarios: ['embalse', 'lago', 'rio'],
       claim: 'El rey del spinning en embalses.',
       intro: 'Depredador ligado a la estructura: piedras, troncos, vegetación y cambios de fondo. Responde a señuelos muy variados, desde superficie hasta vinilos arrastrados por el fondo.',
@@ -365,7 +365,7 @@
       ]
     },
     {
-      id: 'carpa', name: 'Carpa', waterTypes: [FW], latin: 'Cyprinus carpio', scene: 'forest',
+      id: 'carpa', name: 'Carpa', waterTypes: [FW], latin: 'Cyprinus carpio', scene: 'forest', photo: 'assets/photos/especie-carpa.webp',
       scenarios: ['lago', 'embalse', 'rio'],
       claim: 'Fuerza, desconfianza y grandes tamaños.',
       intro: 'Pez de fondo que se alimenta removiendo el lecho. Desconfiada y potente, puede superar con creces los diez kilos. El cebado y el montaje marcan la diferencia.',
@@ -380,7 +380,7 @@
       ]
     },
     {
-      id: 'barbo', name: 'Barbo', waterTypes: [FW], latin: 'Luciobarbus spp.', scene: 'river',
+      id: 'barbo', name: 'Barbo', waterTypes: [FW], latin: 'Luciobarbus spp.', scene: 'river', photo: 'assets/photos/especie-barbo.webp',
       scenarios: ['rio', 'embalse'],
       claim: 'Combativo y típico de nuestros ríos.',
       intro: 'Ciprínido de fondo muy extendido en los ríos ibéricos. Busca alimento entre las piedras de la corriente y en las colas de los embalses. Ofrece combates intensos para su tamaño.',
@@ -395,7 +395,7 @@
       ]
     },
     {
-      id: 'siluro', name: 'Siluro', waterTypes: [FW], latin: 'Silurus glanis', scene: 'river',
+      id: 'siluro', name: 'Siluro', waterTypes: [FW], latin: 'Silurus glanis', scene: 'river', photo: 'assets/photos/especie-siluro.webp',
       scenarios: ['rio', 'embalse'],
       claim: 'El gigante de los grandes ríos.',
       intro: 'El mayor pez de agua dulce de Europa. Depredador nocturno y oportunista de grandes ríos y embalses. Exige equipos muy robustos.',
