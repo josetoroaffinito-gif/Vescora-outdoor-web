@@ -47,6 +47,9 @@ D.products.forEach((p) => {
   if (p.waterReview) warnings.push(`revisar tipo de agua: ${p.id}`);
 });
 D.journal.forEach((a) => (a.products || []).forEach((r) => P.has(r) || errors.push(`journal ${a.slug}: producto inexistente "${r}"`)));
+// Portada: la selección de New In debe apuntar a productos existentes.
+((D.site.home && D.site.home.newIn) || []).forEach((id) => P.has(id) || errors.push(`portada: New In apunta a un producto inexistente "${id}"`));
+if (!D.products.some((p) => p.featured)) warnings.push('portada: ningún producto tiene featured: true (Productos destacados quedará vacío)');
 
 console.log(`Productos ${D.products.length} · Técnicas ${D.techniques.length} · Especies ${D.species.length} · Escenarios ${D.conditions.filter((c) => c.scenario).length}`);
 warnings.length && console.log(`\n${warnings.length} avisos:\n  ` + warnings.join('\n  '));

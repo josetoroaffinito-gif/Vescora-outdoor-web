@@ -19,6 +19,10 @@
   const pUrl = (p) => `equipamiento/${p.category}/${p.id}`;
   const arrow = '<span class="arr" aria-hidden="true">→</span>';
   const ext = '<span aria-hidden="true">↗</span>';
+  // Menú principal (las mismas cinco entradas que el header de index.html) y rutas de sección.
+  const NAV = [['Equipamiento', 'equipamiento'], ['Técnicas y especies', 'tecnicas-y-especies'], ['Encuentra tu equipo', 'encuentra-tu-equipo'], ['Vescora', 'vescora'], ['Contacto', 'contacto']];
+  const TS = 'tecnicas-y-especies';
+  const FINDER = 'encuentra-tu-equipo';
 
   // ——— Media: fotografía real si existe; si no, ilustración ———
   function sceneMedia(o, cls = '', label) {
@@ -30,10 +34,29 @@
   }
   const prodArt = (p) => (p.photo ? `<img src="${esc(p.photo)}" alt="${esc('VESCORA ' + p.name)}" loading="lazy" decoding="async">` : A.product(p));
 
+  // Los recuadros con foto toman el color de fondo de la propia foto para que la imagen encaje sin bordes.
+  function paintBg(box) {
+    const img = box && $('img', box);
+    if (!img) return;
+    img.loading = 'eager';
+    const paint = () => {
+      try {
+        const c = document.createElement('canvas'); c.width = c.height = 1;
+        const x = c.getContext('2d'); x.drawImage(img, 2, 2, 1, 1, 0, 0, 1, 1);
+        const [r, g, b] = x.getImageData(0, 0, 1, 1).data;
+        box.style.background = `rgb(${r},${g},${b})`;
+      } catch (e) { /* se mantiene el fondo claro por defecto */ }
+    };
+    img.complete && img.naturalWidth ? paint() : img.addEventListener('load', paint, { once: true });
+  }
+
   function specLine(p) {
     const s = [p.length, p.specs.Peso || p.specs['Acción de lance']].filter((x) => x && x !== '—');
     return s.join(' · ');
   }
+
+  // El precio solo aparece si el producto tiene un precio real (`price`).
+  const fmtPrice = (n) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(n);
 
   function card(p, i = 0) {
     const tech = p.techniques[0] ? TECH[p.techniques[0]].name : '';
@@ -43,6 +66,7 @@
         <div class="card__name">${esc(p.name)}</div>
         <div class="card__type">${esc(p.type)}</div>
         <div class="card__spec">${esc(specLine(p))}</div>
+        ${typeof p.price === 'number' ? `<div class="card__price">${fmtPrice(p.price)}</div>` : ''}
         <div class="card__foot"><span class="tag tech">${esc(tech)}</span><span class="link-arrow">Explorar ${arrow}</span></div>
       </div>
     </a>`;
@@ -163,7 +187,7 @@
       const path = [SPEC[state.species].name, COND[state.scenario].name, TECH[state.technique].name].concat(bandOn ? [BANDS[state.band][0]] : []);
       kitHtml = `<p class="kit__path">${path.map(esc).join(' → ')}${ws.length === 1 ? ` <span class="kit__water">${esc(WATER[ws[0]].name)}</span>` : ''}</p>
         ${kit.length ? `<ul class="kit__list">${kit.map(([role, p]) => `<li><a href="${pUrl(p)}"><span class="thumb">${prodArt(p)}</span><span><span class="kit__role">${esc(role)}</span><strong>${esc(p.name)}</strong><span class="small muted">${esc(specLine(p))}</span></span>${arrow}</a></li>`).join('')}</ul>` : `<p class="kit__empty">Todavía no hay equipamiento VESCORA para esta combinación. <a class="link-arrow" href="contacto">Pregúntanos ${arrow}</a></p>`}
-        <div class="kit__foot"><a class="link-arrow" href="${withWater(`tecnicas/${state.technique}`, ws.length === 1 ? WATER[ws[0]] : null)}">Guía de ${esc(TECH[state.technique].name)} ${arrow}</a>${full ? '' : `<a class="link-arrow" href="tu-equipo?${q}">Abrir y compartir ${arrow}</a>`}</div>`;
+        <div class="kit__foot"><a class="link-arrow" href="${withWater(`tecnicas/${state.technique}`, ws.length === 1 ? WATER[ws[0]] : null)}">Guía de ${esc(TECH[state.technique].name)} ${arrow}</a>${full ? '' : `<a class="link-arrow" href="${FINDER}?${q}">Abrir y compartir ${arrow}</a>`}</div>`;
     } else {
       kitHtml = `<p class="kit__empty">Responde a las preguntas y VESCORA te propondrá un equipo de partida: señuelo o cebo, montaje, línea, caña y carrete.</p>`;
     }
@@ -202,22 +226,49 @@
       cleanFinder(state);
       box.outerHTML = finderHtml(state, full);
       bindFinder(root, state);
-      if (full) history.replaceState(null, '', 'tu-equipo' + (Object.values(state).some(Boolean) ? '?' + new URLSearchParams(Object.fromEntries(Object.entries(state).filter(([, x]) => x))) : ''));
+      if (full) history.replaceState(null, '', FINDER + (Object.values(state).some(Boolean) ? '?' + new URLSearchParams(Object.fromEntries(Object.entries(state).filter(([, x]) => x))) : ''));
     }, { once: true });
   }
 
   // ——— Vistas ———
   const V = {};
 
+  // ——— Portada ———
+  // New In: si algún producto tiene `addedAt` (fecha real de incorporación), se muestran los más recientes;
+  // si no, la selección editorial de `site.home.newIn`. Nunca se inventan fechas.
+  function newInProducts() {
+    const H = D.site.home || {};
+    const dated = D.products.filter((p) => p.addedAt).sort((a, b) => String(b.addedAt).localeCompare(String(a.addedAt)));
+    return (dated.length ? dated : (H.newIn || []).map((id) => PROD[id]).filter(Boolean)).slice(0, H.newInMax || 4);
+  }
+  // Productos destacados: `featured: true`, sin repetir los que ya salen en New In.
+  function featuredProducts(exclude = []) {
+    const skip = new Set(exclude.map((p) => p.id));
+    return D.products.filter((p) => p.featured && !skip.has(p.id)).slice(0, (D.site.home || {}).featuredMax || 8);
+  }
+  // Acceso directo al recomendador: no lo duplica, solo lleva a "Encuentra tu equipo".
+  function ctaBand(title = 'Encuentra tu equipo', text = 'Elige qué quieres pescar, dónde y con qué técnica. VESCORA cruza tus respuestas con su catálogo y te propone un equipo de partida.') {
+    return `<div class="cta-band on-dark reveal">
+      <div><div class="eyebrow">Herramienta para el pescador</div><h3 class="cta-band__title">${esc(title)}</h3><p class="cta-band__text">${esc(text)}</p></div>
+      <div class="cta-band__actions"><a class="btn btn--light" href="${FINDER}">Encuentra tu equipo ${arrow}</a><a class="btn btn--ghost" href="equipamiento"><span>Ver equipamiento</span></a></div>
+    </div>`;
+  }
+
   V.home = () => {
-    const featured = D.products.filter((p) => p.featured);
+    const newIn = newInProducts();
+    const featured = featuredProducts(newIn);
     const ig = [
-      ['scene', { scene: 'dawn', id: 'ig1' }, 'Primera luz'], ['prod', PROD['minnow-kingdom-105s-sardina-azul'], 'Minnow Kingdom 105S'], ['scene', { scene: 'rock', id: 'ig2' }, 'Costa rocosa'],
-      ['prod', PROD['egi-30-night'], 'Egi Night 3.0'], ['scene', { scene: 'night', id: 'ig3' }, 'Noches de eging'], ['scene', { scene: 'forest', id: 'ig4' }, 'Fuera del camino']
-    ];
+      ['photo', 'assets/photos/journal-salir-al-amanecer-checklist.webp', 'Primera luz'],
+      ['prod', PROD['minnow-kingdom-105s-sardina-azul'], 'Minnow Kingdom 105S'],
+      ['photo', 'assets/photos/journal-rockfishing-equipo-basico-para-empezar.webp', 'Costa rocosa'],
+      ['prod', PROD['kit-vinilos-40'], 'Kit 40 vinilos'],
+      ['photo', 'assets/photos/tecnica-fly-fishing.webp', 'Río arriba'],
+      ['photo', 'assets/photos/journal-como-elegir-un-fluorocarbono.webp', 'Fuera del camino']
+    ].filter(([, o]) => o);
+    const igMedia = (k, o, cap) => (k === 'prod' ? prodArt(o) : `<img src="${esc(o)}" alt="${esc(cap)}" loading="lazy" decoding="async">`);
     return {
       title: 'VESCORA — Equipment for the wild · Equipamiento de pesca',
-      description: 'VESCORA es una marca outdoor cuyo territorio inicial es la pesca. Descubre equipamiento por catálogo, por técnica y por especie.',
+      description: 'VESCORA: señuelos y equipamiento de pesca para agua dulce y salada. Explora el catálogo o encuentra tu equipo según lo que quieres pescar, dónde y cómo.',
       over: true,
       html: `
       <section class="hero">
@@ -236,88 +287,42 @@
         <div class="hero__scroll" aria-hidden="true">Desliza</div>
       </section>
 
-      <section class="section">
-        <div class="wrap manifesto">
-          <div class="reveal">
-            ${sceneMedia({ scene: 'river', id: 'manifesto', photo: 'assets/photos/manifiesto-carrete.webp' }, 'manifesto__media', 'Mano sujetando la caña y recogiendo línea con el carrete de spinning')}
-            <div class="manifesto__caption"><span>Spinning · Recogida</span><span>01 / Manifiesto</span></div>
-          </div>
-          <div class="manifesto__text reveal reveal-d1">
-            <div class="eyebrow">Manifiesto</div>
-            <h2 class="h2" style="margin:20px 0 36px">Más que equipamiento</h2>
-            <p>Creemos que la pesca empieza mucho antes del primer lance.</p>
-            <p>Empieza al elegir el equipo, estudiar el escenario y entender qué tienes delante.</p>
-            <p>VESCORA nace para acompañar cada una de esas decisiones.</p>
-            <a class="link-arrow" href="vescora" style="margin-top:12px">Nuestra historia ${arrow}</a>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section--paper2" id="encuentra">
+      ${newIn.length ? `<section class="section section--tight" id="new-in">
         <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Tres formas de descubrir Vescora</div><h2 class="h2" style="margin-top:18px">Encuentra tu equipo</h2></div>
-            <p class="lede">Por lo que buscas, por cómo pescas o por lo que quieres pescar. Tres caminos al mismo equipo.</p></div>
-          <div class="routes">
+          <div class="head-row reveal"><div><div class="eyebrow">Novedades</div><h2 class="h2" style="margin-top:18px">New In</h2></div><a class="link-arrow" href="equipamiento">Ver todo el equipamiento ${arrow}</a></div>
+          <div class="collection">${newIn.map(card).join('')}</div>
+        </div>
+      </section>` : ''}
+
+      ${featured.length ? `<section class="section section--paper2" id="destacados">
+        <div class="wrap">
+          <div class="head-row reveal"><div><div class="eyebrow">Selección Vescora</div><h2 class="h2" style="margin-top:18px">Productos destacados</h2></div><a class="link-arrow" href="equipamiento">Ver todo el catálogo ${arrow}</a></div>
+          <div class="grid">${featured.map(card).join('')}</div>
+        </div>
+      </section>` : ''}
+
+      <section class="section" id="elige">
+        <div class="wrap">
+          <div class="head-row reveal"><div><div class="eyebrow">Te ayudamos a elegir</div><h2 class="h2" style="margin-top:18px">¿No sabes qué señuelo elegir?</h2></div>
+            <p class="lede">Encuentra el equipo adecuado para tu próxima jornada.</p></div>
+          <div class="routes routes--compact">
             ${[
-              ['01', 'Equipamiento', '¿Sabes lo que buscas?', 'Explora directamente nuestro catálogo.', 'Ver equipamiento', 'equipamiento', { scene: 'harbor', id: 'r1', photo: 'assets/photos/ruta-equipamiento.webp' }],
-              ['02', 'Técnicas', '¿Sabes cómo quieres pescar?', 'Descubre el equipamiento recomendado para cada técnica.', 'Explorar técnicas', 'tecnicas', { scene: 'coast', id: 'r2', photo: 'assets/photos/ruta-tecnicas.webp' }],
-              ['03', 'Especies', '¿Sabes qué quieres pescar?', 'Descubre qué equipamiento puede ayudarte a enfrentarte a cada especie.', 'Explorar especies', 'especies', { scene: 'boat', id: 'r3', photo: 'assets/photos/ruta-especies.webp' }]
+              ['01', 'Especies', '¿Qué quieres pescar?', 'Lubina, trucha, black bass, calamar… Cada especie pide su señuelo.', 'Ver especies', `${TS}#especies`, { scene: 'boat', id: 'r3', photo: 'assets/photos/ruta-especies.webp' }],
+              ['02', 'Técnicas', '¿Dónde y cómo vas a pescar?', 'Costa, río o embalse. Spinning, eging o mosca.', 'Ver técnicas', `${TS}#tecnicas`, { scene: 'coast', id: 'r2', photo: 'assets/photos/ruta-tecnicas.webp' }],
+              ['03', 'Equipamiento', '¿Qué necesitas?', 'Señuelo, línea y montaje que encajan con tu jornada.', 'Ver equipamiento', 'equipamiento', { scene: 'harbor', id: 'r1', photo: 'assets/photos/ruta-equipamiento.webp' }]
             ].map(([n, t, q, d, c, u, sc], i) => `<a class="route reveal reveal-d${i}" href="${u}">${sceneMedia(sc, '', t)}<div class="route__body"><div class="route__num">${n} —</div><div class="route__title">${t}</div><p class="route__q">${q}</p><p class="route__t">${d}</p><span class="link-arrow">${c} ${arrow}</span></div></a>`).join('')}
           </div>
-        </div>
-      </section>
-
-      <section class="section section--forest on-dark">
-        <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Herramienta para el pescador</div><h2 class="h2" style="margin-top:18px">Tu equipo en cuatro decisiones</h2></div>
-            <p class="lede">Especie, escenario, técnica y gramaje. VESCORA cruza su catálogo y te propone un punto de partida.</p></div>
-          ${finderHtml({ species: 'lubina', scenario: 'costa-rocosa', technique: 'spinning', band: 'b2' }, false)}
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Selección</div><h2 class="h2" style="margin-top:18px">Equipamiento esencial</h2></div><a class="link-arrow" href="equipamiento">Todo el equipamiento ${arrow}</a></div>
-          <div class="rail">${featured.map(card).join('')}</div>
-        </div>
-      </section>
-
-      <section class="section section--tight">
-        <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Técnicas</div><h2 class="h2" style="margin-top:18px">Elige tu técnica</h2></div><a class="link-arrow" href="tecnicas">Todas las técnicas ${arrow}</a></div>
-          <div class="tiles">${D.techniques.map((t, i) => tile(t, `tecnicas/${t.id}`, t.type, i, waterNames(t))).join('')}</div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Especies</div><h2 class="h2" style="margin-top:18px">¿Qué quieres pescar?</h2></div><a class="link-arrow" href="especies">Todas las especies ${arrow}</a></div>
-          <div class="tiles tiles--4">${WATERS.flatMap((w) => D.species.filter((s) => wOf(s).includes(w.id)).slice(0, 2)).map((s, i) => tile(s, `especies/${s.id}`, s.claim, i, waterNames(s))).join('')}</div>
-        </div>
-      </section>
-
-      <section class="section section--paper2">
-        <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Filosofía</div><h2 class="h2" style="margin-top:18px">Lo que nos mueve</h2></div><a class="link-arrow" href="vescora/filosofia">Nuestra filosofía ${arrow}</a></div>
-          ${pillars()}
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Vescora Journal</div><h2 class="h2" style="margin-top:18px">Antes de salir</h2></div><a class="link-arrow" href="journal">Ir al Journal ${arrow}</a></div>
-          <div class="jgrid">${D.journal.slice(0, 3).map(jcard).join('')}</div>
+          ${ctaBand()}
         </div>
       </section>
 
       <section class="section section--dark on-dark">
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">${esc(D.site.instagramHandle)}</div><h2 class="h2" style="margin-top:18px">Follow the adventure</h2></div><a class="btn btn--ghost" href="${esc(D.site.instagram)}" target="_blank" rel="noopener"><span>Instagram ${ext}</span></a></div>
-          <div class="ig">${ig.map(([k, o, cap], i) => `<a class="${k === 'prod' ? 'is-product' : ''} reveal reveal-d${i % 4}" href="${esc(D.site.instagram)}" target="_blank" rel="noopener" aria-label="${esc(cap)} en Instagram"><div class="media ${k === 'scene' ? 'grain' : ''}">${k === 'prod' ? prodArt(o) : A.scene(o.scene, { seed: o.id, label: cap })}</div><span class="ig__cap">${esc(cap)}</span></a>`).join('')}</div>
+          <div class="ig">${ig.map(([k, o, cap], i) => `<a class="${k === 'prod' ? 'is-product' : ''} reveal reveal-d${i % 4}" href="${esc(D.site.instagram)}" target="_blank" rel="noopener" aria-label="${esc(cap)} en Instagram"><div class="media ${k === 'prod' ? '' : 'grain'}">${igMedia(k, o, cap)}</div><span class="ig__cap">${esc(cap)}</span></a>`).join('')}</div>
         </div>
       </section>`,
-      ld: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'VESCORA', url: D.site.domain + '/', potentialAction: { '@type': 'SearchAction', target: D.site.domain + '/buscar?q={q}', 'query-input': 'required name=q' } },
-      after: (root) => bindFinder(root, { species: 'lubina', scenario: 'costa-rocosa', technique: 'spinning', band: 'b2' })
+      ld: { '@context': 'https://schema.org', '@type': 'WebSite', name: 'VESCORA', url: D.site.domain + '/', potentialAction: { '@type': 'SearchAction', target: D.site.domain + '/buscar?q={q}', 'query-input': 'required name=q' } }
     };
   };
 
@@ -335,7 +340,13 @@
     ].map(([t, d], i) => `<div class="pillar reveal reveal-d${i}"><div class="pillar__n">0${i + 1}</div><h3>${t}</h3><p>${d}</p></div>`).join('')}</div>`;
   }
 
-  // Catálogo general y por categoría. El tipo de agua llega por ruta (/equipamiento/agua-dulce) o por ?agua=.
+  // Orden del catálogo: por categoría (señuelos primero) y, dentro de cada una, primero lo que tiene fotografía real.
+  const CAT_ORDER = Object.fromEntries(D.categories.map((c, i) => [c.id, i]));
+  const PROD_ORDER = Object.fromEntries(D.products.map((p, i) => [p.id, i]));
+  const catalogSort = (a, b) => CAT_ORDER[a.category] - CAT_ORDER[b.category] || (b.photo ? 1 : 0) - (a.photo ? 1 : 0) || PROD_ORDER[a.id] - PROD_ORDER[b.id];
+
+  // Catálogo general y por categoría. El tipo de agua es un filtro del catálogo (desplegable "Tipo de agua"):
+  // llega por ruta (/equipamiento/agua-dulce) o por ?agua=.
   V.catalog = (catId, q, waterSlug) => {
     const cat = catId ? CAT[catId] : null;
     if (catId && !cat) return V.notFound();
@@ -343,7 +354,7 @@
     const ws = water ? [water.id] : null;
     const f = { sub: q.get('tipo') || '', tec: q.get('tecnica') || '', esp: q.get('especie') || '' };
     const inCtx = (p) => inWater(p, ws);
-    let list = D.products.filter((p) => inCtx(p) && (!cat || p.category === cat.id) && (!f.sub || p.sub === f.sub) && (!f.tec || p.techniques.includes(f.tec)) && (!f.esp || p.species.includes(f.esp)));
+    const list = D.products.filter((p) => inCtx(p) && (!cat || p.category === cat.id) && (!f.sub || p.sub === f.sub) && (!f.tec || p.techniques.includes(f.tec)) && (!f.esp || p.species.includes(f.esp))).sort(catalogSort);
     const base = cat ? `equipamiento/${cat.id}` : water ? `equipamiento/${water.slug}` : 'equipamiento';
     const qs = (patch) => { const o = Object.assign({}, { tipo: f.sub, tecnica: f.tec, especie: f.esp, agua: cat && water ? water.q : '' }, patch); const s = new URLSearchParams(Object.fromEntries(Object.entries(o).filter(([, v]) => v))).toString(); return base + (s ? '?' + s : ''); };
     // Al cambiar de agua se conservan los filtros que sigan siendo compatibles.
@@ -353,35 +364,40 @@
       const s = new URLSearchParams(Object.fromEntries(Object.entries(keep).filter(([, v]) => v))).toString();
       return (w ? `equipamiento/${w.slug}` : 'equipamiento') + (s ? '?' + s : '');
     };
-    const subsShown = cat ? cat.sub.filter((s) => !water || D.products.some((p) => p.category === cat.id && p.sub === s.id && inCtx(p))) : [];
+    const subsShown = cat ? cat.sub.filter((s) => D.products.some((p) => p.category === cat.id && p.sub === s.id && inCtx(p))) : [];
     const chipsTop = cat
       ? [`<a class="chip ${!f.sub ? 'is-active' : ''}" href="${qs({ tipo: '' })}">Todo</a>`].concat(subsShown.map((s) => `<a class="chip ${f.sub === s.id ? 'is-active' : ''}" href="${qs({ tipo: s.id })}">${esc(s.name)}</a>`))
-      : [`<a class="chip is-active" href="${base}">Todo</a>`].concat(D.categories.map((c) => `<a class="chip" href="${withWater(`equipamiento/${c.id}`, water)}">${esc(c.name)}</a>`));
+      : null;
     const crumbItems = [['Inicio', './'], ['Equipamiento', 'equipamiento']].concat(water ? [[water.name, cat ? `equipamiento/${water.slug}` : null]] : []).concat(cat ? [[cat.name]] : []);
     if (!cat && !water) crumbItems[1] = ['Equipamiento'];
-    const catList = (c, i) => {
-      const subs = c.sub.filter((s) => !water || D.products.some((p) => p.category === c.id && p.sub === s.id && inCtx(p)));
-      const sample = D.products.find((p) => p.category === c.id && inCtx(p));
-      return `<a class="cat reveal" href="${withWater(`equipamiento/${c.id}`, water)}"><div class="cat__name"><small>0${i + 1}</small>${esc(c.name)}</div><div class="cat__sub">${subs.map((s) => esc(s.name)).join(' · ')}</div><div class="cat__media media">${sample ? prodArt(sample) : ''}</div></a>`;
+    // Categorías en tarjetas compactas; la categoría prioritaria (`highlight`, Señuelos) va primero y con acceso a sus tipos.
+    const catNav = () => {
+      const cats = D.categories.map((c) => ({ c, items: D.products.filter((p) => p.category === c.id && inCtx(p)).sort(catalogSort) }))
+        .filter((x) => x.items.length).sort((a, b) => (b.c.highlight ? 1 : 0) - (a.c.highlight ? 1 : 0));
+      return `<section class="catnav-section"><div class="wrap"><nav class="catnav" aria-label="Categorías de equipamiento">${cats.map(({ c, items }) => {
+        const subs = c.highlight ? c.sub.filter((s) => items.some((p) => p.sub === s.id)) : [];
+        return `<div class="catnav__item${c.highlight ? ' catnav__item--lead' : ''}">
+          <a class="catnav__link" href="${withWater(`equipamiento/${c.id}`, water)}"><span class="catnav__media">${prodArt(items[0])}</span><span class="catnav__body"><span class="catnav__name">${esc(c.name)}</span><span class="catnav__count">${items.length} ${items.length === 1 ? 'producto' : 'productos'}</span></span></a>
+          ${subs.length ? `<div class="catnav__subs">${subs.map((s) => `<a href="${withWater(`equipamiento/${c.id}?tipo=${s.id}`, water)}">${esc(s.name)}</a>`).join('')}</div>` : ''}
+        </div>`;
+      }).join('')}</nav></div></section>`;
     };
-    const waterTiles = `<section class="section--tight" style="padding-bottom:clamp(40px,5vw,72px)"><div class="wrap"><div class="tiles tiles--2">${WATERS.map((w, i) => tile({ name: w.name, scene: w.scene, id: 'eq-' + w.id, photo: w.photo }, `equipamiento/${w.slug}`, w.claim, i, 'Equipamiento')).join('')}</div></div></section>`;
     const intro = cat
       ? pageHero({ eyebrow: water ? `Equipamiento · ${water.name}` : 'Equipamiento', title: cat.name, lede: cat.claim + ' ' + cat.intro, scene: { scene: cat.scene, id: 'cat-' + cat.id, photo: cat.photo }, crumbsHtml: crumbs(crumbItems), solid: true })
-      : `<section class="page-head"><div class="wrap">${crumbs(crumbItems)}${water ? '<div class="eyebrow" style="margin-bottom:18px">Equipamiento</div>' : ''}<h1 class="display">${esc(water ? water.name : 'Equipamiento')}</h1><p class="lede">${esc(water ? water.intro : 'Señuelos, cañas, carretes, líneas y accesorios. Una selección pensada para funcionar como un sistema.')}</p></div></section>
-        ${water ? '' : waterTiles}
-        <section><div class="wrap"><div class="cats">${D.categories.filter((c) => !water || D.products.some((p) => p.category === c.id && inCtx(p))).map(catList).join('')}</div></div></section>`;
+      : `<section class="page-head page-head--compact"><div class="wrap">${crumbs(crumbItems)}${water ? '<div class="eyebrow" style="margin-bottom:18px">Equipamiento</div>' : ''}<h1 class="display">${esc(water ? water.name : 'Equipamiento')}</h1><p class="lede">${esc(water ? water.intro : 'Todo nuestro catálogo: señuelos, cañas, carretes, líneas y accesorios. Filtra por tipo de agua, técnica o especie.')}</p></div></section>
+        ${catNav()}`;
     return {
       title: cat ? `${cat.name} de pesca${water ? ' · ' + water.name : ''} · Equipamiento` : water ? `Equipamiento de pesca en ${water.name.toLowerCase()}` : 'Equipamiento de pesca',
       description: cat ? `${cat.claim} ${cat.intro}` : water ? `Equipamiento VESCORA para pesca en ${water.name.toLowerCase()}: ${water.claim}` : 'Catálogo VESCORA: señuelos, cañas, carretes, líneas y accesorios de pesca en agua dulce y salada, organizados por técnica y especie.',
       over: !!cat,
       html: `${intro}
-      <section class="section" style="padding-top:${cat ? 'clamp(40px,5vw,72px)' : 'clamp(56px,7vw,96px)'}">
+      <section class="section catalog" style="padding-top:clamp(28px,4vw,52px)">
         <div class="wrap">
-          <div class="toolbar">
-            ${waterSwitch(water, waterHref)}
-            <div class="toolbar__row">
-            <div class="chips chips--scroll" style="flex:1;min-width:0">${chipsTop.join('')}</div>
+          <div class="toolbar"><div class="toolbar__row">
+            ${chipsTop ? `<div class="chips chips--scroll" style="flex:1;min-width:0">${chipsTop.join('')}</div>` : '<span class="toolbar__label">Filtrar el catálogo</span>'}
             <div class="toolbar__selects">
+              <label class="sr-only" for="f-agua">Tipo de agua</label>
+              <select id="f-agua" data-water><option value="">Todas las aguas</option>${WATERS.map((w) => `<option value="${w.q}" ${water && water.id === w.id ? 'selected' : ''}>${esc(w.name)}</option>`).join('')}</select>
               <label class="sr-only" for="f-tec">Técnica</label>
               <select id="f-tec" data-filter="tecnica"><option value="">Todas las técnicas</option>${D.techniques.filter((t) => inWater(t, ws)).map((t) => `<option value="${t.id}" ${f.tec === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>
               <label class="sr-only" for="f-esp">Especie</label>
@@ -393,7 +409,12 @@
         </div>
       </section>`,
       ld: ldCrumbs(crumbItems),
-      after: (root) => $$('[data-filter]', root).forEach((s) => s.addEventListener('change', () => navigate(qs({ [s.dataset.filter]: s.value }), { keepScroll: true })))
+      after: (root) => {
+        $$('[data-filter]', root).forEach((s) => s.addEventListener('change', () => navigate(qs({ [s.dataset.filter]: s.value }), { keepScroll: true })));
+        $$('.catnav__media', root).forEach(paintBg);
+        const wsel = $('[data-water]', root);
+        if (wsel) wsel.addEventListener('change', () => navigate(waterHref(WATER_BY_Q[wsel.value] || null), { keepScroll: true }));
+      }
     };
   };
 
@@ -481,21 +502,6 @@
         additionalProperty: Object.entries(p.specs).map(([k, v]) => ({ '@type': 'PropertyValue', name: k, value: v }))
       }],
       after: (root) => {
-        // Los recuadros con foto toman el color de fondo de la foto para que la imagen encaje sin bordes.
-        const paintBg = (box) => {
-          const img = box && $('img', box);
-          if (!img) return;
-          img.loading = 'eager';
-          const paint = () => {
-            try {
-              const c = document.createElement('canvas'); c.width = c.height = 1;
-              const x = c.getContext('2d'); x.drawImage(img, 2, 2, 1, 1, 0, 0, 1, 1);
-              const [r, g, b] = x.getImageData(0, 0, 1, 1).data;
-              box.style.background = `rgb(${r},${g},${b})`;
-            } catch (e) { /* se mantiene el fondo claro por defecto */ }
-          };
-          img.complete && img.naturalWidth ? paint() : img.addEventListener('load', paint, { once: true });
-        };
         paintBg($('.eco__now .media.is-photo', root));
         paintBg($('#gmain.is-photo', root));
         const main = $('#gmain', root);
@@ -515,27 +521,48 @@
     };
   };
 
-  // Listado agrupado por tipo de agua. Una entidad multiagua aparece en ambos grupos, pero es la misma.
-  function waterGrouped(items, only, hrefFor, metaFor) {
+  // Técnicas y especies: una sola sección con dos áreas. Dentro de cada área, las tarjetas se agrupan por tipo de agua;
+  // una técnica multiagua (Spinning) aparece en ambos grupos, pero es la misma entidad.
+  function waterGrouped(items, only, hrefFor, metaFor, area) {
     return WATERS.filter((w) => !only || only.id === w.id).map((w) => {
       const list = items.filter((x) => wOf(x).includes(w.id));
       if (!list.length) return '';
-      return `<section class="section water-group" style="padding-top:0"><div class="wrap">
-        <div class="head-row reveal" style="margin-bottom:28px"><div><div class="eyebrow">${esc(w.claim)}</div><h2 class="h2" style="margin-top:14px">${esc(w.name)}</h2></div>${only ? '' : `<a class="link-arrow" href="${hrefFor(null, w)}">Ver ${esc(w.name.toLowerCase())} ${arrow}</a>`}</div>
+      return `<div class="water-group">
+        <div class="water-group__head reveal"><h3 class="water-group__title">${esc(w.name)}</h3><span class="water-group__claim">${esc(w.claim)}</span>${only ? '' : `<a class="link-arrow" href="${TS}?agua=${w.q}#${area}">Solo ${esc(w.name.toLowerCase())} ${arrow}</a>`}</div>
         <div class="tiles">${list.map((x, i) => tile(x, hrefFor(x, w), metaFor(x), i, wOf(x).length > 1 ? waterNames(x) : '')).join('')}</div>
-      </div></section>`;
+      </div>`;
     }).join('');
   }
 
-  V.techniques = (waterSlug) => {
-    const water = waterSlug ? WATER_BY_Q[waterSlug] : null;
-    const ci = [['Inicio', './'], ['Técnicas', water ? 'tecnicas' : null]].concat(water ? [[water.name]] : []);
+  V.techSpecies = (q) => {
+    const water = waterParam(q);
+    const ws = water ? [water.id] : null;
+    const nT = D.techniques.filter((t) => inWater(t, ws)).length;
+    const nS = D.species.filter((s) => inWater(s, ws)).length;
+    const self = (hash) => `${TS}${water ? '?agua=' + water.q : ''}#${hash}`;
+    const ci = [['Inicio', './'], ['Técnicas y especies', water ? TS : null]].concat(water ? [[water.name]] : []);
     return {
-      title: water ? `Técnicas de pesca en ${water.name.toLowerCase()}` : 'Técnicas de pesca · Elige tu técnica',
-      description: water ? `Técnicas de pesca en ${water.name.toLowerCase()} y el equipamiento recomendado para cada una.` : 'Spinning, light spinning, fly fishing, carpfishing, rockfishing, eging, surfcasting y embarcación: equipamiento recomendado para cada técnica.',
-      html: `<section class="page-head"><div class="wrap">${crumbs(ci)}<h1 class="display">${water ? esc(water.name) : 'Elige tu técnica'}</h1><p class="lede">Cada técnica es una forma distinta de leer el agua. Descubre qué equipo necesitas para cada una.</p>
-        <div style="margin-top:32px">${waterSwitch(water, (w) => (w ? `tecnicas/${w.slug}` : 'tecnicas'), 'Todas')}</div></div></section>
-        ${waterGrouped(D.techniques, water, (t, w) => (t ? `tecnicas/${t.id}?agua=${w.q}` : `tecnicas/${w.slug}`), (t) => t.claim)}`,
+      title: water ? `Técnicas y especies de ${water.name.toLowerCase()}` : 'Técnicas y especies de pesca',
+      description: 'Cómo y qué pescar: spinning, light spinning, fly fishing, eging, surfcasting… y lubina, trucha, black bass, calamar y más especies, con su equipamiento recomendado.',
+      html: `<section class="page-head"><div class="wrap">${crumbs(ci)}<h1 class="display">Técnicas y especies</h1>
+        <p class="lede">Cómo quieres pescar y qué quieres encontrar. Cada técnica y cada especie te lleva a su equipamiento recomendado.</p>
+        <div class="ts-nav">
+          <nav class="chips" aria-label="Áreas de la sección"><a class="chip" href="${self('tecnicas')}">Técnicas · ${nT}</a><a class="chip" href="${self('especies')}">Especies · ${nS}</a></nav>
+          ${waterSwitch(water, (w) => (w ? `${TS}?agua=${w.q}` : TS))}
+        </div></div></section>
+      <section class="section ts-area" id="tecnicas" style="padding-top:clamp(16px,3vw,40px)">
+        <div class="wrap">
+          <div class="ts-area__head reveal"><span class="ts-area__n">01</span><div><h2 class="h2">Técnicas</h2><p class="muted">Cómo y dónde vas a pescar.</p></div></div>
+          ${waterGrouped(D.techniques, water, (t, w) => `tecnicas/${t.id}?agua=${w.q}`, (t) => t.claim, 'tecnicas')}
+        </div>
+      </section>
+      <section class="section section--paper2 ts-area" id="especies">
+        <div class="wrap">
+          <div class="ts-area__head reveal"><span class="ts-area__n">02</span><div><h2 class="h2">Especies</h2><p class="muted">Qué quieres pescar.</p></div></div>
+          ${waterGrouped(D.species, water, (s) => `especies/${s.id}`, (s) => s.claim, 'especies')}
+        </div>
+      </section>
+      <section class="section section--tight"><div class="wrap">${ctaBand('¿Ya sabes qué y cómo?', 'Lleva tu especie, tu escenario y tu técnica al recomendador y te proponemos el equipo.')}</div></section>`,
       ld: ldCrumbs(ci)
     };
   };
@@ -559,7 +586,7 @@
     const ws = water ? [water.id] : null;
     const list = productsFor('techniques', id).filter((p) => inWater(p, ws));
     const sp = D.species.filter((s) => s.techniques.includes(id) && inWater(s, ws));
-    const ci = [['Inicio', './'], ['Técnicas', 'tecnicas']].concat(water ? [[water.name, `tecnicas/${water.slug}`]] : []).concat([[t.name]]);
+    const ci = [['Inicio', './'], ['Técnicas y especies', TS]].concat(water ? [[water.name, `${TS}?agua=${water.q}#tecnicas`]] : []).concat([[t.name]]);
     const filterQ = 'tecnica=' + t.id + (water ? '&agua=' + water.q : '');
     return {
       title: `${t.name}${multi && water ? ' en ' + water.name.toLowerCase() : ''} · Equipamiento recomendado`,
@@ -594,23 +621,10 @@
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">Especies</div><h2 class="h2" style="margin-top:18px">Qué pescar con ${esc(t.name)}</h2></div></div>
           <div class="tiles tiles--4">${sp.map((s, i) => tile(s, `especies/${s.id}`, s.claim, i)).join('')}</div>
-          <div style="margin-top:48px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn" href="${withWater(`equipamiento?tecnica=${t.id}`, water)}">Explorar equipamiento de ${esc(t.name)} ${arrow}</a><a class="btn btn--ghost" href="tu-equipo"><span>Montar mi equipo</span></a></div>
+          <div style="margin-top:48px;display:flex;gap:12px;flex-wrap:wrap"><a class="btn" href="${withWater(`equipamiento?tecnica=${t.id}`, water)}">Explorar equipamiento de ${esc(t.name)} ${arrow}</a><a class="btn btn--ghost" href="${FINDER}"><span>Encuentra tu equipo</span></a></div>
         </div>
       </section>` : ''}`,
       ld: [ldCrumbs(ci), { '@context': 'https://schema.org', '@type': 'Article', headline: `${t.name}: equipamiento recomendado`, about: t.name, publisher: { '@type': 'Organization', name: 'VESCORA' } }]
-    };
-  };
-
-  V.speciesList = (waterSlug) => {
-    const water = waterSlug ? WATER_BY_Q[waterSlug] : null;
-    const ci = [['Inicio', './'], ['Especies', water ? 'especies' : null]].concat(water ? [[water.name]] : []);
-    return {
-      title: water ? `Especies de ${water.name.toLowerCase()} · ¿Qué quieres pescar?` : 'Especies · ¿Qué quieres pescar?',
-      description: water ? `Especies de ${water.name.toLowerCase()}: técnicas y equipamiento recomendado para cada una.` : 'Lubina, jurel, dorada, calamar, trucha, black bass, lucio, carpa y más: técnicas y equipamiento recomendado para cada especie.',
-      html: `<section class="page-head"><div class="wrap">${crumbs(ci)}<h1 class="display">${water ? esc(water.name) : '¿Qué quieres pescar?'}</h1><p class="lede">Elige una especie y descubre las técnicas, señuelos y líneas que mejor funcionan para ella.</p>
-        <div style="margin-top:32px">${waterSwitch(water, (w) => (w ? `especies/${w.slug}` : 'especies'), 'Todas')}</div></div></section>
-        ${waterGrouped(D.species, water, (s, w) => (s ? `especies/${s.id}` : `especies/${w.slug}`), (s) => s.claim)}`,
-      ld: ldCrumbs(ci)
     };
   };
 
@@ -619,7 +633,7 @@
     if (!s) return V.notFound();
     const water = singleWater(s);
     const list = productsFor('species', id);
-    const ci = [['Inicio', './'], ['Especies', 'especies']].concat(water ? [[water.name, `especies/${water.slug}`]] : []).concat([[s.name]]);
+    const ci = [['Inicio', './'], ['Técnicas y especies', TS]].concat(water ? [[water.name, `${TS}?agua=${water.q}#especies`]] : []).concat([[s.name]]);
     return {
       title: `${s.name} · Técnicas y equipamiento recomendado`,
       description: `${s.claim} ${s.intro}`.slice(0, 158),
@@ -667,62 +681,95 @@
     if (init.band && !BANDS[init.band]) init.band = '';
     if (init.species) cleanFinder(init);
     return {
-      title: 'Tu equipo · Qué necesito para pescar',
-      description: 'Elige especie, escenario, técnica y gramaje: VESCORA te propone un equipo de partida con señuelo, montaje, línea y conexión.',
-      html: `<section class="section section--forest on-dark" style="padding-top:calc(var(--header-h) + clamp(48px,7vw,96px));min-height:100svh">
+      title: 'Encuentra tu equipo · Qué señuelo elegir',
+      description: 'Elige qué quieres pescar, dónde y con qué técnica: VESCORA te propone un equipo de partida con productos reales de su catálogo.',
+      html: `<section class="section section--forest on-dark finder-page">
         <div class="wrap">
-          ${crumbs([['Inicio', './'], ['Tu equipo']])}
-          <div class="head-row"><div><div class="eyebrow">Herramienta para el pescador</div><h1 class="h1" style="margin-top:18px">Tu equipo</h1></div>
-          <p class="lede">Una propuesta de partida construida a partir de las relaciones entre producto, técnica, especie y escenario. Ajusta y comparte el enlace.</p></div>
+          ${crumbs([['Inicio', './'], ['Encuentra tu equipo']])}
+          <div class="head-row"><div><div class="eyebrow">Tu equipo en cuatro decisiones</div><h1 class="h1" style="margin-top:18px">Encuentra tu equipo</h1></div>
+          <p class="lede">¿No sabes qué señuelo elegir? Dinos qué quieres pescar, dónde y con qué técnica. VESCORA cruza tus respuestas con su catálogo y te propone un equipo de partida que puedes ajustar y compartir.</p></div>
           ${finderHtml(init, true)}
+          <p class="finder-page__alt">¿Prefieres ver todos los productos? <a class="link-arrow" href="equipamiento">Explorar equipamiento ${arrow}</a></p>
         </div>
       </section>`,
+      ld: ldCrumbs([['Inicio', './'], ['Encuentra tu equipo']]),
       after: (root) => bindFinder(root, init)
     };
   };
 
-  V.about = () => ({
-    title: 'Quiénes somos · Equipment for the wild',
-    description: 'VESCORA nace de una idea sencilla: disfrutar de la pesca empieza mucho antes de lanzar el señuelo.',
-    over: true,
-    html: `${pageHero({ eyebrow: 'Vescora', title: 'Equipment for the wild', scene: { scene: 'forest', id: 'about' }, crumbsHtml: crumbs([['Inicio', './'], ['Vescora']]) })}
+  V.about = () => {
+    const chapters = [
+      ['02', 'Origen', 'Nacemos en la pesca', [
+        'VESCORA nace de una idea sencilla: disfrutar de la pesca empieza mucho antes de lanzar el señuelo. Empieza al conocer el escenario, elegir correctamente el equipo y confiar en cada lance.',
+        'Por eso no nos limitamos a enseñar productos: te ayudamos a elegir por técnica, por especie y con una herramienta que convierte tus respuestas en un equipo de partida.'
+      ], 'assets/photos/journal-spinning-desde-costa-equipamiento-basico.webp', 'Dos pescadores en las rocas frente al mar'],
+      ['03', 'Equipamiento', 'Equipo que funciona', [
+        'No queremos tenerlo todo. Queremos tener lo que funciona. Cada producto entra en el catálogo porque resuelve una situación concreta de pesca y porque encaja con el resto del equipo.',
+        'Buscamos equipo que aguante la sal, el sol y los golpes contra la roca, y que siga funcionando jornada tras jornada.'
+      ], 'assets/photos/journal-como-elegir-un-vinilo-para-lubina.jpg', 'Equipo de pesca ordenado sobre una mesa de madera'],
+      ['04', 'Naturaleza', 'Salir a descubrir', [
+        'Salir de noche a un puerto, caminar una costa que no conoces, llegar a un río antes que la luz. La pesca es nuestra forma de descubrir lugares.',
+        'Pescamos en lugares que queremos seguir encontrando igual. Respeta tallas y vedas, llévate tu basura y deja el sitio mejor de como lo encontraste.'
+      ], 'assets/photos/journal-que-gramaje-utilizar-segun-las-condiciones.webp', 'Dos pescadores sentados junto a un río al atardecer']
+    ];
+    const lines = D.site.lines;
+    return {
+      title: 'Vescora · Quiénes somos',
+      description: 'VESCORA nace en la pesca y crece hacia el outdoor: equipamiento honesto y funcional para quienes encuentran su lugar fuera del camino.',
+      over: true,
+      html: `${pageHero({ eyebrow: 'Vescora', title: 'Equipment for the wild', lede: 'Nacemos en la pesca. Nos mueve todo lo que ocurre fuera del camino.', scene: { scene: 'coast', id: 'about', photo: 'assets/photos/agua-salada.webp' }, crumbsHtml: crumbs([['Inicio', './'], ['Vescora']]) })}
+      <section class="section">
+        <div class="wrap manifesto">
+          <div class="reveal">
+            ${sceneMedia({ scene: 'river', id: 'manifesto', photo: 'assets/photos/manifiesto-carrete.webp' }, 'manifesto__media', 'Mano sujetando la caña y recogiendo línea con el carrete de spinning')}
+            <div class="manifesto__caption"><span>Spinning · Recogida</span><span>01 / Manifiesto</span></div>
+          </div>
+          <div class="manifesto__text reveal reveal-d1">
+            <div class="eyebrow">Manifiesto</div>
+            <h2 class="h2" style="margin:20px 0 36px">Más que equipamiento</h2>
+            <p>Creemos que la pesca empieza mucho antes del primer lance.</p>
+            <p>Empieza al elegir el equipo, estudiar el escenario y entender qué tienes delante.</p>
+            <p>VESCORA nace para acompañar cada una de esas decisiones.</p>
+          </div>
+        </div>
+      </section>
+      <section class="section section--paper2">
+        <div class="wrap chapters">
+          ${chapters.map(([n, k, t, ps, photo, alt], i) => `<article class="chapter${i % 2 ? ' chapter--flip' : ''} reveal">
+            ${sceneMedia({ photo, id: 'ch' + i }, 'chapter__media', alt)}
+            <div class="chapter__text"><div class="chapter__n">${n} · ${esc(k)}</div><h2 class="h2">${esc(t)}</h2>${ps.map((x) => `<p>${esc(x)}</p>`).join('')}</div>
+          </article>`).join('')}
+        </div>
+      </section>
+      <section class="brand-band">
+        <div class="brand-band__media">${sceneMedia({ photo: 'assets/photos/journal-como-elegir-un-fluorocarbono.webp', id: 'band' }, '', 'Pescador en una barca entre la niebla de un lago')}</div>
+        <div class="wrap brand-band__content"><p class="brand-band__quote">La pesca es nuestro origen. La exploración, nuestro territorio.</p></div>
+      </section>
       <section class="section">
         <div class="wrap intro-grid">
-          <div class="eyebrow">Nuestra historia</div>
-          <div class="manifesto__text">
-            <p class="reveal">VESCORA nace de una idea sencilla: disfrutar de la pesca empieza mucho antes de lanzar el señuelo.</p>
-            <p class="reveal">Empieza al conocer el escenario, elegir correctamente el equipo y confiar en cada lance.</p>
+          <div><div class="chapter__n">05 · Visión</div><h2 class="h2" style="margin-top:14px">Hacia dónde vamos</h2></div>
+          <div class="vision reveal">
+            <p class="big">Hoy, VESCORA es pesca: señuelos, líneas y el equipo que te acompaña junto al agua. Pero lo que nos mueve va más allá del agua.</p>
+            <p>Queremos crecer hacia ropa, accesorios y equipo para trekking, camping y otras actividades al aire libre, sin perder lo que nos define: equipo honesto, funcional y pensado para usarse.</p>
+            <dl class="vision__lines"><div><dt>Hoy</dt><dd>${lines.filter((l) => l.active).map((l) => esc(l.name)).join(' · ')}</dd></div><div><dt>Hacia dónde vamos</dt><dd>${lines.filter((l) => !l.active).map((l) => esc(l.name)).join(' · ')}</dd></div></dl>
           </div>
         </div>
       </section>
       <section class="section section--paper2">
         <div class="wrap">
-          ${[
-            ['Selección', 'No queremos tenerlo todo. Queremos tener lo que funciona. Cada producto entra en el catálogo porque resuelve una situación concreta de pesca, y porque encaja con el resto del equipo.', 'harbor'],
-            ['Calidad', 'Materiales que aguantan la sal, el sol y los golpes contra la roca. Anillas, anzuelos y acabados que se revisan antes de llegar a ti.', 'rock'],
-            ['Exploración', 'Salir de noche a un puerto, caminar una costa que no conoces, llegar a un río antes que la luz. La pesca es nuestra forma de descubrir lugares.', 'river'],
-            ['Naturaleza', 'Pescamos en lugares que queremos seguir encontrando igual. Respeta tallas y vedas, llévate tu basura y deja el sitio mejor de como lo encontraste.', 'forest'],
-            ['Cultura de pesca', 'Compartir lo aprendido es parte del juego. El Journal y las guías por técnica y especie nacen para que elijas mejor antes de salir.', 'coast']
-          ].map(([t, d, sc], i) => `<div class="manifesto reveal" style="margin-bottom:clamp(56px,8vw,112px);${i % 2 ? 'direction:rtl' : ''}">
-            <div style="direction:ltr">${sceneMedia({ scene: sc, id: 'ab' + i }, 'manifesto__media ratio-32', t)}</div>
-            <div style="direction:ltr"><div class="pillar__n">0${i + 1}</div><h2 class="h2" style="margin:14px 0 20px">${t}</h2><p class="lede">${d}</p></div>
-          </div>`).join('')}
-        </div>
-      </section>
-      <section class="section">
-        <div class="wrap">
-          <div class="head-row reveal"><div><div class="eyebrow">Filosofía</div><h2 class="h2" style="margin-top:18px">Tres pilares</h2></div><a class="link-arrow" href="vescora/filosofia">Leer filosofía ${arrow}</a></div>
+          <div class="head-row reveal"><div><div class="eyebrow">Filosofía</div><h2 class="h2" style="margin-top:18px">Lo que nos mueve</h2></div><a class="link-arrow" href="vescora/filosofia">Leer filosofía ${arrow}</a></div>
           ${pillars()}
         </div>
       </section>
       <section class="section section--dark on-dark">
         <div class="wrap" style="text-align:center">
           <p class="h2" style="max-width:20ch;margin:0 auto 32px">Hoy, la pesca. Mañana, cualquier lugar fuera del camino.</p>
-          <a class="btn btn--light" href="equipamiento">Explorar equipamiento ${arrow}</a>
+          <div class="cta-row"><a class="btn btn--light" href="equipamiento">Explorar equipamiento ${arrow}</a><a class="btn btn--ghost" href="${FINDER}"><span>Encuentra tu equipo</span></a></div>
         </div>
       </section>`,
-    ld: { '@context': 'https://schema.org', '@type': 'AboutPage', name: 'Quiénes somos · VESCORA' }
-  });
+      ld: { '@context': 'https://schema.org', '@type': 'AboutPage', name: 'Quiénes somos · VESCORA' }
+    };
+  };
 
   V.philosophy = () => ({
     title: 'Filosofía · Calidad, exploración y precisión',
@@ -877,12 +924,17 @@
     D.products.forEach((p) => INDEX.push({ type: 'Productos', title: p.name, sub: `${p.type} · ${specLine(p)}`, url: pUrl(p), p, text: norm([p.name, p.type, p.summary, CAT[p.category].name, subName(p), p.length, p.weight != null ? p.weight + ' g' : '', Object.values(p.specs).join(' '), p.techniques.map((t) => TECH[t].name).join(' '), p.species.map((s) => SPEC[s].name).join(' '), p.conditions.map((c) => COND[c].name).join(' '), waterNames(p)].join(' ')), key: norm(p.name + ' ' + p.type + ' ' + subName(p)) }));
     D.techniques.forEach((t) => INDEX.push({ type: 'Técnicas', title: t.name, sub: t.claim, url: 'tecnicas/' + t.id, o: t, text: norm([t.name, t.claim, t.intro, t.scenario, waterNames(t)].join(' ')), key: norm(t.name) }));
     D.species.forEach((s) => INDEX.push({ type: 'Especies', title: s.name, sub: s.claim, url: 'especies/' + s.id, o: s, text: norm([s.name, s.latin, s.claim, s.intro, waterNames(s)].join(' ')), key: norm(s.name) }));
-    WATERS.forEach((w) => [['Equipamiento', 'equipamiento'], ['Técnicas', 'tecnicas'], ['Especies', 'especies']].forEach(([t, u]) => INDEX.push({ type: 'Categorías', title: `${t} · ${w.name}`, sub: w.claim, url: `${u}/${w.slug}`, text: norm(`${t} ${w.name} ${w.claim}`), key: norm(`${w.name} ${t}`) })));
+    WATERS.forEach((w) => {
+      INDEX.push({ type: 'Categorías', title: `Equipamiento · ${w.name}`, sub: w.claim, url: `equipamiento/${w.slug}`, text: norm(`equipamiento ${w.name} ${w.claim}`), key: norm(`${w.name} equipamiento`) });
+      INDEX.push({ type: 'Categorías', title: `Técnicas y especies · ${w.name}`, sub: w.claim, url: `${TS}?agua=${w.q}`, text: norm(`tecnicas especies ${w.name} ${w.claim}`), key: norm(`${w.name} tecnicas especies`) });
+    });
+    INDEX.push({ type: 'Categorías', title: 'Encuentra tu equipo', sub: 'Te ayudamos a elegir según especie, escenario y técnica', url: FINDER, text: norm('encuentra tu equipo recomendador que señuelo elegir ayuda especie escenario tecnica'), key: norm('encuentra tu equipo') });
+    INDEX.push({ type: 'Categorías', title: 'Técnicas y especies', sub: 'Cómo y qué pescar', url: TS, text: norm('tecnicas especies guia como pescar'), key: norm('tecnicas especies') });
     D.categories.forEach((c) => {
       INDEX.push({ type: 'Categorías', title: c.name, sub: c.claim, url: 'equipamiento/' + c.id, text: norm(c.name + ' ' + c.intro), key: norm(c.name) });
       c.sub.forEach((s) => INDEX.push({ type: 'Categorías', title: `${c.name} · ${s.name}`, sub: c.name, url: `equipamiento/${c.id}?tipo=${s.id}`, text: norm(s.name + ' ' + c.name), key: norm(s.name) }));
     });
-    D.journal.forEach((a) => INDEX.push({ type: 'Journal', title: a.title, sub: `${a.cat} · ${a.read} min`, url: 'journal/' + a.slug, o: a, text: norm([a.title, a.excerpt, a.cat, a.body.map((b) => [].concat(b[1]).join(' ')).join(' ')].join(' ')), key: norm(a.title) }));
+    if (D.site.features.journal) D.journal.forEach((a) => INDEX.push({ type: 'Journal', title: a.title, sub: `${a.cat} · ${a.read} min`, url: 'journal/' + a.slug, o: a, text: norm([a.title, a.excerpt, a.cat, a.body.map((b) => [].concat(b[1]).join(' ')).join(' ')].join(' ')), key: norm(a.title) }));
   }
   function search(q) {
     if (!INDEX) buildIndex();
@@ -903,7 +955,7 @@
     const res = search(q);
     if (!q.trim()) return '';
     if (!res.length) return `<p class="muted">Sin resultados para «${esc(q)}». Prueba con una especie, una técnica o un tipo de señuelo.</p>`;
-    const groups = ['Productos', 'Técnicas', 'Especies', 'Categorías', 'Journal'];
+    const groups = ['Productos', 'Técnicas', 'Especies', 'Categorías'].concat(D.site.features.journal ? ['Journal'] : []);
     const thumb = (it) => it.p ? prodArt(it.p) : it.o && it.o.scene ? A.scene(it.o.scene, { seed: it.o.id || it.o.slug, label: it.title }) : '';
     const col = (gs) => gs.map((g) => {
       const items = res.filter((r) => r.type === g).slice(0, g === 'Productos' ? 8 : 5);
@@ -915,7 +967,7 @@
     const s = q.get('q') || '';
     return {
       title: s ? `Buscar: ${s}` : 'Buscar',
-      description: 'Busca productos, técnicas, especies, categorías y artículos de VESCORA.',
+      description: 'Busca productos, técnicas, especies y categorías de VESCORA.',
       noindex: true,
       html: `<section class="page-head"><div class="wrap">${crumbs([['Inicio', './'], ['Buscar']])}<h1 class="h1">Buscar</h1>
         <form class="search__field" role="search" action="buscar" data-search-page><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><label class="sr-only" for="sp-q">Buscar</label><input id="sp-q" name="q" value="${esc(s)}" placeholder="lubina, spinning, vinilo 15g…" autocomplete="off"></form>
@@ -940,13 +992,22 @@
   function route(path, q) {
     const s = path.replace(/^\/+|\/+$/g, '').split('/').filter(Boolean).map(decodeURIComponent);
     const [a, b, c] = s;
+    const wq = (slug) => WATER_BY_Q[slug].q;
     if (!a) return V.home();
     if (a === 'equipamiento') return c ? V.product(b, c) : isWaterSlug(b) ? V.catalog(null, q, b) : V.catalog(b, q);
-    if (a === 'tecnicas') return c ? V.notFound() : !b ? V.techniques() : isWaterSlug(b) ? V.techniques(b) : V.technique(b, q);
-    if (a === 'especies') return c ? V.notFound() : !b ? V.speciesList() : isWaterSlug(b) ? V.speciesList(b) : V.species(b);
-    if (a === 'tu-equipo' && !b) return V.finder(q);
+    if (a === TS && !b) return V.techSpecies(q);
+    // Los listados de Técnicas y de Especies viven ahora en Técnicas y especies; las fichas mantienen su URL.
+    if (a === 'tecnicas') return c ? V.notFound() : !b ? { redirect: `${TS}#tecnicas` } : isWaterSlug(b) ? { redirect: `${TS}?agua=${wq(b)}#tecnicas` } : V.technique(b, q);
+    if (a === 'especies') return c ? V.notFound() : !b ? { redirect: `${TS}#especies` } : isWaterSlug(b) ? { redirect: `${TS}?agua=${wq(b)}#especies` } : V.species(b);
+    if (a === FINDER && !b) return V.finder(q);
+    if (a === 'tu-equipo' && !b) return { redirect: FINDER + location.search };
     if (a === 'vescora') return b === 'filosofia' ? V.philosophy() : b ? V.notFound() : V.about();
-    if (a === 'journal') return b ? V.article(b) : V.journal(q);
+    if (a === 'journal') {
+      if (D.site.features.journal) return b ? V.article(b) : V.journal(q);
+      // Journal no es público: cada artículo redirige a la guía de su técnica o especie.
+      const art = b && ART[b];
+      return { redirect: art && art.techniques[0] ? `tecnicas/${art.techniques[0]}` : art && art.species[0] ? `especies/${art.species[0]}` : TS };
+    }
     if (a === 'contacto' && !b) return V.contact(q);
     if (a === 'legal') return V.legal(b);
     if (a === 'buscar') return V.search(q);
@@ -976,6 +1037,8 @@
     const q = new URLSearchParams(location.search);
     const path = currentPath();
     const v = route(path, q);
+    // Rutas antiguas: se sustituyen por su nueva URL sin añadir una entrada al historial.
+    if (v.redirect) { history.replaceState(null, '', BASE + v.redirect); return render(opts); }
     const main = $('#main');
     main.innerHTML = `<div class="view">${v.html}</div>`;
     setMeta(v, path);
@@ -983,7 +1046,8 @@
     onScroll();
     // Navegación activa
     const top = path.split('/')[0];
-    $$('.nav a').forEach((a) => (a.getAttribute('href') === top ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
+    const section = { tecnicas: TS, especies: TS }[top] || top;
+    $$('.nav a').forEach((a) => (a.getAttribute('href') === section ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
     if (v.after) v.after(main);
     // Aparición progresiva
     if (io) io.disconnect();
@@ -1039,22 +1103,22 @@
   menu.hidden = false; srch.hidden = false;
   menu.setAttribute('aria-hidden', 'true'); srch.setAttribute('aria-hidden', 'true');
   const closeBtn = (label) => `<button class="icon-btn" type="button" data-close aria-label="Cerrar ${label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>`;
-  const lines = D.site.lines.filter((l) => l.active);
+  const catsMenu = D.categories.slice().sort((x, y) => (y.highlight ? 1 : 0) - (x.highlight ? 1 : 0));
   menu.innerHTML = `<div class="wrap"><div class="menu__top"><a class="brand" href="./"><span class="brand__emblem" aria-hidden="true"></span><span class="brand__word">VESCORA</span></a>${closeBtn('menú')}</div>
     <div class="menu__grid">
-      <nav class="menu__main" aria-label="Menú principal">${[['Equipamiento', 'equipamiento'], ['Técnicas', 'tecnicas'], ['Especies', 'especies'], ['Tu equipo', 'tu-equipo'], ['Vescora', 'vescora'], ['Journal', 'journal'], ['Contacto', 'contacto']].map(([t, u], i) => `<a href="${u}"><small>0${i + 1}</small>${t}</a>`).join('')}</nav>
+      <nav class="menu__main" aria-label="Menú principal">${NAV.map(([t, u], i) => `<a href="${u}"><small>0${i + 1}</small>${t}</a>`).join('')}</nav>
       <div class="menu__cols">
-        <div><h4>Equipamiento${lines.length > 1 ? '' : ' · ' + esc(lines[0].name)}</h4>${WATERS.map((w) => `<a class="menu__water" href="equipamiento/${w.slug}">${esc(w.name)}</a>`).join('')}${D.categories.map((c) => `<a href="equipamiento/${c.id}">${esc(c.name)}</a>`).join('')}</div>
-        <div><h4>Técnicas</h4>${WATERS.map((w) => `<a class="menu__water" href="tecnicas/${w.slug}">${esc(w.name)}</a>${D.techniques.filter((t) => wOf(t).includes(w.id)).map((t) => `<a href="tecnicas/${t.id}?agua=${w.q}">${esc(t.name)}</a>`).join('')}`).join('')}</div>
-        <div><h4>Especies</h4>${WATERS.map((w) => `<a class="menu__water" href="especies/${w.slug}">${esc(w.name)}</a>${D.species.filter((s) => wOf(s).includes(w.id)).map((s) => `<a href="especies/${s.id}">${esc(s.name)}</a>`).join('')}`).join('')}</div>
-        <div><h4>Vescora</h4><a href="vescora">Quiénes somos</a><a href="vescora/filosofia">Filosofía</a><a href="journal">Journal</a></div>
+        <div><h4>Equipamiento</h4>${catsMenu.map((c) => `<a href="equipamiento/${c.id}">${esc(c.name)}</a>`).join('')}<a href="equipamiento">Todo el equipamiento</a></div>
+        <div><h4>Técnicas</h4>${D.techniques.map((t) => `<a href="tecnicas/${t.id}">${esc(t.name)}</a>`).join('')}</div>
+        <div><h4>Especies</h4>${WATERS.map((w) => `<a class="menu__water" href="${TS}?agua=${w.q}#especies">${esc(w.name)}</a>${D.species.filter((s) => wOf(s).includes(w.id)).map((s) => `<a href="especies/${s.id}">${esc(s.name)}</a>`).join('')}`).join('')}</div>
+        <div><h4>Vescora</h4><a href="vescora">Quiénes somos</a><a href="vescora/filosofia">Filosofía</a><a href="contacto">Contacto</a></div>
         <div><h4>Síguenos</h4><a href="${esc(D.site.instagram)}" target="_blank" rel="noopener">Instagram ${ext}</a><a href="mailto:${esc(D.site.email)}">${esc(D.site.email)}</a></div>
       </div>
     </div></div>`;
   const suggestions = ['lubina', 'spinning', 'vinilo 15g', 'jurel', 'rockfishing', 'fluorocarbono', 'calamar'];
   srch.innerHTML = `<div class="wrap"><div class="search__top"><span class="eyebrow">Buscar en Vescora</span>${closeBtn('buscador')}</div>
     <div class="search__body">
-      <form class="search__field" role="search" action="buscar" id="search-form"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><label class="sr-only" for="q">Buscar productos, técnicas, especies o artículos</label><input id="q" name="q" placeholder="¿Qué buscas?" autocomplete="off"></form>
+      <form class="search__field" role="search" action="buscar" id="search-form"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></svg><label class="sr-only" for="q">Buscar productos, técnicas o especies</label><input id="q" name="q" placeholder="¿Qué buscas?" autocomplete="off"></form>
       <div class="chips search__hint">${suggestions.map((s) => `<button type="button" class="chip" data-suggest="${s}">${s}</button>`).join('')}</div>
       <div class="search__results" id="search-results"></div>
     </div></div>`;

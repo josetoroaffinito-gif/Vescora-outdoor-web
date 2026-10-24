@@ -30,7 +30,19 @@
     instagram: 'https://www.instagram.com/vescora', // EDITAR
     instagramHandle: '@vescora',          // EDITAR
     whatsapp: '',                          // EDITAR: p. ej. 'https://wa.me/34600000000' — vacío = oculto
-    features: { commerce: false },         // Fase 2: activar precios / carrito / checkout
+    features: {
+      commerce: false,                     // Fase 2: activar precios / carrito / checkout
+      journal: false                       // Journal oculto: sus rutas redirigen a la guía más cercana. true = volver a publicarlo
+    },
+    // Portada.
+    // · New In: selección editorial (ids, en orden). Si algún producto tiene `addedAt: 'AAAA-MM-DD'`
+    //   (fecha real de incorporación al catálogo), New In pasa a mostrar automáticamente los más recientes.
+    // · Productos destacados: productos con `featured: true`, en el orden del catálogo, sin repetir los de New In.
+    home: {
+      newIn: ['vinilos-realistas-type-b', 'vinilos-realistas-type-a', 'kit-vinilos-40', 'crankbait-pack-5'],
+      newInMax: 4,
+      featuredMax: 8
+    },
     // Tipos de agua. `q` es el valor del filtro (?agua=dulce) y `slug` la ruta (/equipamiento/agua-dulce).
     waterTypes: [
       { id: FW, name: 'Agua dulce', slug: 'agua-dulce', q: 'dulce', scene: 'river', photo: 'assets/photos/agua-dulce.webp', claim: 'Ríos, arroyos, lagos y embalses.', intro: 'Truchas en corriente, black bass en embalses, carpas en lagos. Equipamiento para pescar tierra adentro.' },
@@ -80,7 +92,7 @@
 
   const categories = [
     {
-      id: 'senuelos', name: 'Señuelos', claim: 'La última decisión antes del lance.',
+      id: 'senuelos', name: 'Señuelos', highlight: true, claim: 'La última decisión antes del lance.',
       intro: 'Vinilos, minnows, paseantes, jigs y jibioneras seleccionados por su nado, su lance y su resistencia al uso real.',
       scene: 'rock',
       sub: [
@@ -418,7 +430,7 @@
     // ——— SEÑUELOS · VINILOS
     P({
       id: 'paddle-tail-90', name: 'Paddle Tail 90', waterTypes: [SW], waterReview: true, category: 'senuelos', sub: 'vinilos', type: 'Soft Swimbait',
-      length: '90 mm', weight: 15, featured: true,
+      length: '90 mm', weight: 15,
       summary: 'El vinilo de cola de pala que nada a cualquier velocidad.',
       description: 'Un vinilo de perfil hidrodinámico y cola de pala que genera vibración desde la recuperación más lenta. Montado en cabeza plomada cubre la capa media del agua con un nado natural que imita a sardinas y lisas. Compuesto blando y resistente, preparado para varias capturas.',
       specs: { Tipo: 'Vinilo · cola de pala', Longitud: '90 mm', Peso: '15 g', Acción: 'Vibración de cola y balanceo', Material: 'Compuesto TPR suave', Color: 'Sardina natural', Profundidad: '0,5 – 4 m (según cabeza)' },
@@ -510,10 +522,10 @@
     // ——— SEÑUELOS · MINNOWS — Minnow Kingdom 105S (6 colores, misma ficha técnica)
     ...[
       ['plata-holo', 'Plata Holo', ['#9aa4b4', '#e6e9ee'], true, { wallapop: '', vinted: '', miraanuncio: '' }],
-      ['lomo-rosa', 'Lomo Rosa', ['#c2185b', '#e3e3e6'], false, { wallapop: '', vinted: '' }],
-      ['cabeza-roja', 'Cabeza Roja', ['#7c8a9a', '#e9d36a'], false, { wallapop: '', vinted: '' }],
-      ['plata-espejo', 'Plata Espejo', ['#3c4046', '#d9dde2'], false, { wallapop: '' }],
-      ['oro-rojo', 'Oro Rojo', ['#6f747a', '#b3262d'], false, { wallapop: '', vinted: '' }],
+      ['lomo-rosa', 'Lomo Rosa', ['#c2185b', '#e3e3e6'], true, { wallapop: '', vinted: '' }],
+      ['cabeza-roja', 'Cabeza Roja', ['#7c8a9a', '#e9d36a'], true, { wallapop: '', vinted: '' }],
+      ['plata-espejo', 'Plata Espejo', ['#3c4046', '#d9dde2'], true, { wallapop: '' }],
+      ['oro-rojo', 'Oro Rojo', ['#6f747a', '#b3262d'], true, { wallapop: '', vinted: '' }],
       ['sardina-azul', 'Sardina Azul', ['#1f3f8f', '#e3e6ea'], true, { wallapop: '', vinted: '' }]
     ].map(([slug, color, c, featured, listings]) => P({
       id: `minnow-kingdom-105s-${slug}`, name: `Minnow Kingdom 105S ${color}`, waterTypes: [SW], waterReview: true, family: 'minnow-kingdom-105s', color,
@@ -532,7 +544,7 @@
     // ——— SEÑUELOS · PASEANTES
     P({
       id: 'walker-120', name: 'Walker 120', waterTypes: [SW], waterReview: true, category: 'senuelos', sub: 'paseantes', type: 'Paseante de superficie',
-      length: '120 mm', weight: 21, featured: true,
+      length: '120 mm', weight: 21,
       summary: 'Zig-zag en superficie. Ataques que se ven.',
       description: 'Stickbait de superficie que camina de lado a lado con un ligero toque de puntera. Ideal en amaneceres de mar en calma, cuando los depredadores persiguen pasto arriba.',
       specs: { Tipo: 'Paseante · stickbait', Longitud: '120 mm', Peso: '21 g', Acción: 'Walk the dog', Material: 'ABS · anillas inox', Color: 'Hueso', Profundidad: 'Superficie' },
@@ -595,7 +607,7 @@
     // ——— SEÑUELOS · JIBIONERAS (egis)
     P({
       id: 'egi-30-night', name: 'Egi Night 3.0', waterTypes: [SW], category: 'senuelos', sub: 'jibioneras', type: 'Egi',
-      length: '3.0', weight: 15, featured: true,
+      length: '3.0', weight: 15,
       summary: 'Egi luminiscente para calamares nocturnos.',
       description: 'Egi talla 3.0 con cuerpo luminiscente y tela de alta visibilidad. Caída estable a unos 3 s/m y corona de púas afiladas para no perder la pieza.',
       specs: { Tipo: 'Egi', Longitud: 'Talla 3.0', Peso: '15 g', Acción: 'Caída estable ~3 s/m', Material: 'ABS · tela · púas inox', Color: 'Naranja glow', Profundidad: '2 – 10 m' },
@@ -659,7 +671,7 @@
     // ——— CAÑAS
     P({
       id: 'ridge-902m', name: 'Ridge 902M', waterTypes: [SW], category: 'canas', sub: 'spinning', type: 'Caña de spinning',
-      length: '2,74 m', weightRange: [10, 35], featured: true,
+      length: '2,74 m', weightRange: [10, 35],
       summary: 'La caña de spinning para costa.',
       description: 'Caña de dos tramos con blank de carbono de módulo medio-alto. Puntera sensible para trabajar minnows y vinilos, y reserva de potencia para peces grandes junto a la roca.',
       specs: { Tipo: 'Spinning', Longitud: '2,74 m · 2 tramos', 'Acción de lance': '10 – 35 g', Acción: 'Rápida', Material: 'Carbono · anillas SiC', 'Línea recomendada': 'PE 0.8 – 1.2', 'Peso de la caña': '165 g' },
@@ -733,7 +745,7 @@
     // ——— CARRETES
     P({
       id: 'arc-3000', name: 'Arc 3000', waterTypes: [FW, SW], category: 'carretes', sub: 'spinning', type: 'Carrete de spinning',
-      length: 'Tamaño 3000', weight: null, featured: true,
+      length: 'Tamaño 3000', weight: null,
       summary: 'Freno progresivo y protección frente a la sal.',
       description: 'Carrete de spinning con cuerpo rígido, freno de carbono y sellado frente a la sal. Recuperación fluida para trabajar señuelos durante horas.',
       specs: { Tipo: 'Spinning', Tamaño: '3000', Ratio: '6,2:1', Freno: '9 kg · carbono', Material: 'Cuerpo de aluminio', Capacidad: 'PE 1.0 · 200 m', Peso: '245 g' },
@@ -783,7 +795,7 @@
     // ——— LÍNEAS
     P({
       id: 'pe-x8-08', name: 'Braid X8 PE 0.8', waterTypes: [FW, SW], category: 'lineas', sub: 'trenzado', type: 'Trenzado 8 hilos',
-      length: '150 m', weight: null, featured: true,
+      length: '150 m', weight: null,
       summary: 'Redondo, suave y sin memoria.',
       description: 'Trenzado de 8 hilos con tratamiento de superficie para lances largos y silenciosos. Sección redonda que se asienta bien en la bobina.',
       specs: { Tipo: 'Trenzado · 8 hilos', Diámetro: '0,15 mm', Resistencia: '7,2 kg', Longitud: '150 m', Material: 'PE', Color: 'Gris piedra' },
@@ -807,7 +819,7 @@
     }),
     P({
       id: 'fluoro-025', name: 'Fluorocarbono 0,25', waterTypes: [FW, SW], category: 'lineas', sub: 'fluorocarbono', type: 'Fluorocarbono 100%',
-      length: '50 m', weight: null, featured: true,
+      length: '50 m', weight: null,
       summary: 'Invisible bajo el agua, duro contra la roca.',
       description: 'Fluorocarbono 100% para bajos. Índice de refracción próximo al del agua y alta resistencia a la abrasión en costa rocosa.',
       specs: { Tipo: 'Fluorocarbono 100%', Diámetro: '0,25 mm', Resistencia: '4,8 kg', Longitud: '50 m', Material: 'PVDF', Color: 'Transparente' },
@@ -867,7 +879,7 @@
     }),
     P({
       id: 'jig-head-10', name: 'Jig Head 10 g', waterTypes: [FW, SW], category: 'accesorios', sub: 'cabezas-plomadas', type: 'Cabeza plomada',
-      length: 'Anzuelo 2/0', weight: 10, featured: true,
+      length: 'Anzuelo 2/0', weight: 10,
       summary: 'La cabeza de referencia para el Paddle Tail 90.',
       description: 'Cabeza plomada con anzuelo 2/0 y retenedor de vinilo. Equilibrio perfecto para vinilos de 80 a 100 mm en spinning costero.',
       specs: { Tipo: 'Cabeza con retenedor', Peso: '10 g', Anzuelo: '2/0', Material: 'Plomo · acero al carbono', Color: 'Plata' },
@@ -889,7 +901,7 @@
     }),
     P({
       id: 'grapa-rapida-1', name: 'Grapa rápida nº 1', waterTypes: [FW, SW], category: 'accesorios', sub: 'grapas', type: 'Grapa',
-      length: 'nº 1 · 10 uds', weight: null, featured: true,
+      length: 'nº 1 · 10 uds', weight: null,
       summary: 'Cambia de señuelo en segundos.',
       description: 'Grapa de acero inoxidable de apertura rápida. Permite cambiar de señuelo sin rehacer el nudo y respeta su nado natural.',
       specs: { Tipo: 'Grapa rápida', Talla: 'nº 1', Resistencia: '15 kg', Material: 'Acero inoxidable', Unidades: '10' },
@@ -944,7 +956,7 @@
     }),
     P({
       id: 'mochila-coastline', name: 'Mochila Coastline 22 L', waterTypes: [FW, SW], category: 'accesorios', sub: 'mochilas', type: 'Mochila',
-      length: '22 L', weight: null, featured: true,
+      length: '22 L', weight: null,
       summary: 'Ligera para recorrer la costa.',
       description: 'Mochila de 22 L con tejido resistente al agua, porta cañas lateral y espalda ventilada. Pensada para caminar entre rocas con las manos libres.',
       specs: { Tipo: 'Mochila', Capacidad: '22 L', Material: 'Nylon 420D recubierto', Incluye: 'Porta cañas · bolsillo para cajas', Color: 'Verde oliva' },
