@@ -842,7 +842,7 @@
       art: { k: 'spool', c: ['#cdb993', '#6f5a3c'] }, listings: { wallapop: '' }
     }),
     P({
-      id: 'bajo-conico', name: 'Puente cónico 0,26–0,57', waterTypes: [SW], category: 'lineas', sub: 'bajos', type: 'Bajo cónico',
+      id: 'bajo-conico', name: 'Puente Cónico 0,26–0,57', waterTypes: [SW], category: 'lineas', sub: 'bajos', type: 'Bajo cónico',
       length: '5 × 15 m', weight: null,
       summary: 'Protege la línea en el momento del lance.',
       description: 'Puentes cónicos que absorben la carga del lance en surfcasting. Transición progresiva de diámetro para que el nudo pase suave por las anillas.',
@@ -900,7 +900,7 @@
       art: { k: 'jighead', c: ['#62676b', '#b4b9ba'], large: true }, listings: { wallapop: '' }
     }),
     P({
-      id: 'grapa-rapida-1', name: 'Grapa rápida nº 1', waterTypes: [FW, SW], category: 'accesorios', sub: 'grapas', type: 'Grapa',
+      id: 'grapa-rapida-1', name: 'Grapa Rápida nº 1', waterTypes: [FW, SW], category: 'accesorios', sub: 'grapas', type: 'Grapa',
       length: 'nº 1 · 10 uds', weight: null,
       summary: 'Cambia de señuelo en segundos.',
       description: 'Grapa de acero inoxidable de apertura rápida. Permite cambiar de señuelo sin rehacer el nudo y respeta su nado natural.',
@@ -911,7 +911,7 @@
       art: { k: 'snap', c: ['#a9b0b4', '#4a5054'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
-      id: 'giratorio-rolling', name: 'Giratorio rolling nº 8', waterTypes: [FW, SW], category: 'accesorios', sub: 'giratorios', type: 'Giratorio',
+      id: 'giratorio-rolling', name: 'Giratorio Rolling nº 8', waterTypes: [FW, SW], category: 'accesorios', sub: 'giratorios', type: 'Giratorio',
       length: 'nº 8 · 10 uds', weight: null,
       summary: 'Evita que la línea se retuerza.',
       description: 'Giratorio de rodamiento compacto que elimina torsiones en la línea al trabajar jigs y montajes a fondo.',
@@ -933,7 +933,7 @@
       art: { k: 'hook', c: ['#2c2f31', '#6c7276'] }, listings: { vinted: '' }
     }),
     P({
-      id: 'caja-organizadora', name: 'Caja organizadora 3600', waterTypes: [FW, SW], category: 'accesorios', sub: 'cajas', type: 'Caja de señuelos',
+      id: 'caja-organizadora', name: 'Caja Organizadora 3600', waterTypes: [FW, SW], category: 'accesorios', sub: 'cajas', type: 'Caja de señuelos',
       length: '36 × 22 × 5 cm', weight: null,
       summary: 'Todo en su sitio, todo a mano.',
       description: 'Caja estanca con separadores ajustables para minnows, vinilos y accesorios. Cierres firmes y junta de goma.',
@@ -944,7 +944,7 @@
       art: { k: 'box', c: ['#d8dcd6', '#3a3f3c'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
-      id: 'alicates-alu', name: 'Alicates de aluminio', waterTypes: [FW, SW], category: 'accesorios', sub: 'herramientas', type: 'Alicates',
+      id: 'alicates-alu', name: 'Alicates de Aluminio', waterTypes: [FW, SW], category: 'accesorios', sub: 'herramientas', type: 'Alicates',
       length: '17 cm', weight: null,
       summary: 'Desanzuelar, cortar y abrir anillas.',
       description: 'Alicates de aluminio anodizado con cortador de trenzado, punta para anillas y cordón de seguridad.',
@@ -977,7 +977,7 @@
       art: { k: 'bag', c: ['#bba98a', '#3a3f3c'] }, listings: { vinted: '' }
     }),
     P({
-      id: 'gafas-polarizadas', name: 'Gafas polarizadas Shoreline', waterTypes: [FW, SW], category: 'accesorios', sub: 'complementos', type: 'Gafas polarizadas',
+      id: 'gafas-polarizadas', name: 'Gafas Polarizadas Shoreline', waterTypes: [FW, SW], category: 'accesorios', sub: 'complementos', type: 'Gafas polarizadas',
       length: 'Lente gris', weight: null,
       summary: 'Ver bajo la superficie.',
       description: 'Gafas con lentes polarizadas que eliminan reflejos para leer el fondo, ver peces y proteger los ojos durante el lance.',
@@ -1038,7 +1038,7 @@
       art: { k: 'fly', c: ['#8a5a2b', '#c08a4a'] }
     }),
     P({
-      id: 'seca-adams-16', name: 'Mosca seca Adams nº 16', waterTypes: [FW], sample: true, category: 'senuelos', sub: 'moscas', type: 'Mosca seca',
+      id: 'seca-adams-16', name: 'Mosca Seca Adams nº 16', waterTypes: [FW], sample: true, category: 'senuelos', sub: 'moscas', type: 'Mosca seca',
       length: 'Nº 16', weight: null,
       summary: 'Para las cebadas en superficie.',
       description: 'Seca polivalente que imita a muchos insectos adultos. Flota alta y se ve bien en la corriente.',
@@ -1116,7 +1116,7 @@
       art: { k: 'reel', c: ['#2a2f2c', '#8c948f'], large: true }
     }),
     P({
-      id: 'wf5f', name: 'Línea de mosca WF5F', waterTypes: [FW], sample: true, category: 'lineas', sub: 'linea-mosca', type: 'Línea de mosca flotante',
+      id: 'wf5f', name: 'Línea de Mosca WF5F', waterTypes: [FW], sample: true, category: 'lineas', sub: 'linea-mosca', type: 'Línea de mosca flotante',
       length: '27 m', weight: null,
       summary: 'Flotante y fácil de lanzar.',
       description: 'Línea de mosca de perfil weight forward flotante para lanzar con facilidad secas y ninfas.',
@@ -1127,7 +1127,7 @@
       art: { k: 'spool', c: ['#7d8a52', '#2b2e30'] }
     }),
     P({
-      id: 'bajo-conico-9ft-5x', name: 'Bajo cónico 9 ft 5X', waterTypes: [FW], sample: true, category: 'lineas', sub: 'bajos', type: 'Bajo cónico de mosca',
+      id: 'bajo-conico-9ft-5x', name: 'Bajo Cónico 9 ft 5X', waterTypes: [FW], sample: true, category: 'lineas', sub: 'bajos', type: 'Bajo cónico de mosca',
       length: '2,74 m', weight: null,
       summary: 'Presentaciones finas y naturales.',
       description: 'Bajo cónico para pesca a mosca que transmite la energía del lance y posa la mosca con suavidad.',
@@ -1138,7 +1138,7 @@
       art: { k: 'spool', c: ['#cfd6d2', '#2b2e30'], clear: true, small: true }
     }),
     P({
-      id: 'bajo-acero-30', name: 'Bajo de acero 30 cm', waterTypes: [FW], sample: true, category: 'lineas', sub: 'bajos', type: 'Bajo de acero',
+      id: 'bajo-acero-30', name: 'Bajo de Acero 30 cm', waterTypes: [FW], sample: true, category: 'lineas', sub: 'bajos', type: 'Bajo de acero',
       length: '30 cm · 2 uds', weight: null,
       summary: 'Imprescindible para el lucio.',
       description: 'Bajo de acero trenzado con grapa y giratorio para evitar que los dientes del lucio corten la línea.',
@@ -1160,7 +1160,7 @@
       art: { k: 'spool', c: ['#55603f', '#2b2e30'] }
     }),
     P({
-      id: 'hair-rig-6', name: 'Montaje de pelo nº 6', waterTypes: [FW], sample: true, category: 'accesorios', sub: 'anzuelos', type: 'Montaje de pelo',
+      id: 'hair-rig-6', name: 'Montaje de Pelo nº 6', waterTypes: [FW], sample: true, category: 'accesorios', sub: 'anzuelos', type: 'Montaje de pelo',
       length: 'nº 6 · 3 uds', weight: null,
       summary: 'El montaje clásico del carpfishing.',
       description: 'Montajes de pelo atados con terminal trenzado y anzuelo curvo. Listos para cebar con boilie.',

@@ -350,18 +350,22 @@
   V.catalog = (catId, q, waterSlug) => {
     const cat = catId ? CAT[catId] : null;
     if (catId && !cat) return V.notFound();
-    const water = waterSlug ? WATER_BY_Q[waterSlug] : waterParam(q);
+    // Dentro de una categoría solo se filtra por tipo de producto; agua, técnica y especie son filtros del catálogo general.
+    const water = cat ? null : waterSlug ? WATER_BY_Q[waterSlug] : waterParam(q);
     const ws = water ? [water.id] : null;
-    const f = { sub: q.get('tipo') || '', tec: q.get('tecnica') || '', esp: q.get('especie') || '' };
+    const f = { sub: q.get('tipo') || '', tec: cat ? '' : q.get('tecnica') || '', esp: cat ? '' : q.get('especie') || '' };
+    // En el catálogo general, la categoría también es un filtro (?categoria=); el tipo siempre va con su categoría.
+    const fcat = cat ? cat.id : (CAT[q.get('categoria')] ? q.get('categoria') : '');
+    if (!fcat) f.sub = '';
     const inCtx = (p) => inWater(p, ws);
-    const list = D.products.filter((p) => inCtx(p) && (!cat || p.category === cat.id) && (!f.sub || p.sub === f.sub) && (!f.tec || p.techniques.includes(f.tec)) && (!f.esp || p.species.includes(f.esp))).sort(catalogSort);
+    const list = D.products.filter((p) => inCtx(p) && (!fcat || p.category === fcat) && (!f.sub || p.sub === f.sub) && (!f.tec || p.techniques.includes(f.tec)) && (!f.esp || p.species.includes(f.esp))).sort(catalogSort);
     const base = cat ? `equipamiento/${cat.id}` : water ? `equipamiento/${water.slug}` : 'equipamiento';
-    const qs = (patch) => { const o = Object.assign({}, { tipo: f.sub, tecnica: f.tec, especie: f.esp, agua: cat && water ? water.q : '' }, patch); const s = new URLSearchParams(Object.fromEntries(Object.entries(o).filter(([, v]) => v))).toString(); return base + (s ? '?' + s : ''); };
+    const qs = (patch) => { const o = Object.assign({}, { categoria: cat ? '' : fcat, tipo: f.sub, tecnica: f.tec, especie: f.esp, agua: cat && water ? water.q : '' }, patch); const s = new URLSearchParams(Object.fromEntries(Object.entries(o).filter(([, v]) => v))).toString(); return base + (s ? '?' + s : ''); };
     // Al cambiar de agua se conservan los filtros que sigan siendo compatibles.
     const waterHref = (w) => {
       const keep = { tecnica: f.tec && inWater(TECH[f.tec], w && [w.id]) ? f.tec : '', especie: f.esp && inWater(SPEC[f.esp], w && [w.id]) ? f.esp : '' };
       if (cat) { const o = Object.assign({ tipo: f.sub, agua: w ? w.q : '' }, keep); const s = new URLSearchParams(Object.fromEntries(Object.entries(o).filter(([, v]) => v))).toString(); return base + (s ? '?' + s : ''); }
-      const s = new URLSearchParams(Object.fromEntries(Object.entries(keep).filter(([, v]) => v))).toString();
+      const s = new URLSearchParams(Object.fromEntries(Object.entries(Object.assign({ categoria: fcat, tipo: f.sub }, keep)).filter(([, v]) => v))).toString();
       return (w ? `equipamiento/${w.slug}` : 'equipamiento') + (s ? '?' + s : '');
     };
     const subsShown = cat ? cat.sub.filter((s) => D.products.some((p) => p.category === cat.id && p.sub === s.id && inCtx(p))) : [];
@@ -370,21 +374,26 @@
       : null;
     const crumbItems = [['Inicio', './'], ['Equipamiento', 'equipamiento']].concat(water ? [[water.name, cat ? `equipamiento/${water.slug}` : null]] : []).concat(cat ? [[cat.name]] : []);
     if (!cat && !water) crumbItems[1] = ['Equipamiento'];
-    // Categorías en tarjetas compactas; la categoría prioritaria (`highlight`, Señuelos) va primero y con acceso a sus tipos.
+    // Categorías en tarjetas compactas e iguales; la categoría prioritaria (`highlight`, Señuelos) va primero.
     const catNav = () => {
       const cats = D.categories.map((c) => ({ c, items: D.products.filter((p) => p.category === c.id && inCtx(p)).sort(catalogSort) }))
         .filter((x) => x.items.length).sort((a, b) => (b.c.highlight ? 1 : 0) - (a.c.highlight ? 1 : 0));
       return `<section class="catnav-section"><div class="wrap"><nav class="catnav" aria-label="Categorías de equipamiento">${cats.map(({ c, items }) => {
-        const subs = c.highlight ? c.sub.filter((s) => items.some((p) => p.sub === s.id)) : [];
-        return `<div class="catnav__item${c.highlight ? ' catnav__item--lead' : ''}">
+        return `<div class="catnav__item">
           <a class="catnav__link" href="${withWater(`equipamiento/${c.id}`, water)}"><span class="catnav__media">${prodArt(items[0])}</span><span class="catnav__body"><span class="catnav__name">${esc(c.name)}</span><span class="catnav__count">${items.length} ${items.length === 1 ? 'producto' : 'productos'}</span></span></a>
-          ${subs.length ? `<div class="catnav__subs">${subs.map((s) => `<a href="${withWater(`equipamiento/${c.id}?tipo=${s.id}`, water)}">${esc(s.name)}</a>`).join('')}</div>` : ''}
         </div>`;
       }).join('')}</nav></div></section>`;
     };
+    const catsWith = D.categories.filter((c) => D.products.some((p) => p.category === c.id && inCtx(p))).sort((a, b) => (b.highlight ? 1 : 0) - (a.highlight ? 1 : 0));
+    // Cambiar de categoría conserva agua, técnica y especie.
+    const catHref = (id) => {
+      const keep = new URLSearchParams(Object.fromEntries(Object.entries({ tecnica: f.tec, especie: f.esp }).filter(([, v]) => v))).toString();
+      const path = id ? withWater(`equipamiento/${id}`, water) : water ? `equipamiento/${water.slug}` : 'equipamiento';
+      return path + (keep ? (path.includes('?') ? '&' : '?') + keep : '');
+    };
     const intro = cat
       ? pageHero({ eyebrow: water ? `Equipamiento · ${water.name}` : 'Equipamiento', title: cat.name, lede: cat.claim + ' ' + cat.intro, scene: { scene: cat.scene, id: 'cat-' + cat.id, photo: cat.photo }, crumbsHtml: crumbs(crumbItems), solid: true })
-      : `<section class="page-head page-head--compact"><div class="wrap">${crumbs(crumbItems)}${water ? '<div class="eyebrow" style="margin-bottom:18px">Equipamiento</div>' : ''}<h1 class="display">${esc(water ? water.name : 'Equipamiento')}</h1><p class="lede">${esc(water ? water.intro : 'Todo nuestro catálogo: señuelos, cañas, carretes, líneas y accesorios. Filtra por tipo de agua, técnica o especie.')}</p></div></section>
+      : `<section class="page-head page-head--compact"><div class="wrap">${crumbs(crumbItems)}${water ? '<div class="eyebrow" style="margin-bottom:18px">Equipamiento</div>' : ''}<h1 class="display">${esc(water ? water.name : 'Equipamiento')}</h1><p class="lede">${esc(water ? water.intro : 'Todo nuestro catálogo: señuelos, cañas, carretes, líneas y accesorios. Filtra por categoría, tipo de producto, agua, técnica o especie.')}</p></div></section>
         ${catNav()}`;
     return {
       title: cat ? `${cat.name} de pesca${water ? ' · ' + water.name : ''} · Equipamiento` : water ? `Equipamiento de pesca en ${water.name.toLowerCase()}` : 'Equipamiento de pesca',
@@ -395,14 +404,18 @@
         <div class="wrap">
           <div class="toolbar"><div class="toolbar__row">
             ${chipsTop ? `<div class="chips chips--scroll" style="flex:1;min-width:0">${chipsTop.join('')}</div>` : '<span class="toolbar__label">Filtrar el catálogo</span>'}
-            <div class="toolbar__selects">
+            ${cat ? '' : `<div class="toolbar__selects">
+              <label class="sr-only" for="f-cat">Categoría</label>
+              <select id="f-cat" data-cat><option value="">Todas las categorías</option>${catsWith.map((c) => `<option value="${c.id}" ${fcat === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>
+              <label class="sr-only" for="f-tipo">Tipo de producto</label>
+              <select id="f-tipo" data-tipo><option value="">Todos los tipos</option>${catsWith.filter((c) => !fcat || c.id === fcat).map((c) => `<optgroup label="${esc(c.name)}">${c.sub.filter((x) => D.products.some((p) => p.category === c.id && p.sub === x.id && inCtx(p))).map((x) => `<option value="${c.id}|${x.id}" ${fcat === c.id && f.sub === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</optgroup>`).join('')}</select>
               <label class="sr-only" for="f-agua">Tipo de agua</label>
               <select id="f-agua" data-water><option value="">Todas las aguas</option>${WATERS.map((w) => `<option value="${w.q}" ${water && water.id === w.id ? 'selected' : ''}>${esc(w.name)}</option>`).join('')}</select>
               <label class="sr-only" for="f-tec">Técnica</label>
               <select id="f-tec" data-filter="tecnica"><option value="">Todas las técnicas</option>${D.techniques.filter((t) => inWater(t, ws)).map((t) => `<option value="${t.id}" ${f.tec === t.id ? 'selected' : ''}>${esc(t.name)}</option>`).join('')}</select>
               <label class="sr-only" for="f-esp">Especie</label>
               <select id="f-esp" data-filter="especie"><option value="">Todas las especies</option>${WATERS.filter((w) => !ws || ws.includes(w.id)).map((w) => `<optgroup label="${esc(w.name)}">${D.species.filter((s) => wOf(s).includes(w.id)).map((s) => `<option value="${s.id}" ${f.esp === s.id ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}</select>
-            </div>
+            </div>`}
           </div></div>
           <div class="head-row" style="margin-bottom:28px"><span class="count">${list.length} ${list.length === 1 ? 'producto' : 'productos'}</span>${f.tec && TECH[f.tec] ? `<a class="link-arrow" href="${withWater(`tecnicas/${f.tec}`, water)}">Guía de ${esc(TECH[f.tec].name)} ${arrow}</a>` : ''}</div>
           ${list.length ? `<div class="grid grid--4">${list.map(card).join('')}</div>` : `<p class="empty">No hay productos con estos filtros. <a class="link-arrow" href="${base}">Ver todo ${arrow}</a></p>`}
@@ -412,6 +425,12 @@
       after: (root) => {
         $$('[data-filter]', root).forEach((s) => s.addEventListener('change', () => navigate(qs({ [s.dataset.filter]: s.value }), { keepScroll: true })));
         $$('.catnav__media', root).forEach(paintBg);
+        const csel = $('[data-cat]', root), tsel = $('[data-tipo]', root);
+        if (csel) csel.addEventListener('change', () => navigate(cat ? catHref(csel.value) : qs({ categoria: csel.value, tipo: '' }), { keepScroll: true }));
+        if (tsel) tsel.addEventListener('change', () => {
+          const [c, t] = tsel.value.split('|');
+          navigate(cat ? qs({ tipo: t || '' }) : qs({ categoria: c || fcat, tipo: t || '' }), { keepScroll: true });
+        });
         const wsel = $('[data-water]', root);
         if (wsel) wsel.addEventListener('change', () => navigate(waterHref(WATER_BY_Q[wsel.value] || null), { keepScroll: true }));
       }
@@ -474,7 +493,7 @@
         <div class="wrap">
           <div class="head-row reveal"><div><div class="eyebrow">Ecosistema Vescora</div><h2 class="h2" style="margin-top:18px">Completa el montaje</h2></div></div>
           <div class="eco">
-            <div class="eco__now reveal"><div class="eyebrow on-dark">Estás viendo</div><div class="media${p.photo ? ' is-photo' : ''}">${prodArt(p)}</div><div><div class="h3" style="text-transform:uppercase">${esc(p.name)}</div><div class="small" style="opacity:.7">${esc(specLine(p))}</div></div></div>
+            <div class="eco__now reveal"><div class="eyebrow on-dark">Estás viendo</div><div class="media${p.photo ? ' is-photo' : ''}">${prodArt(p)}</div><div><div class="h3">${esc(p.name)}</div><div class="small" style="opacity:.7">${esc(specLine(p))}</div></div></div>
             <div class="reveal reveal-d1"><div class="block-title">También puedes necesitar</div><div class="eco__list">${related.map((r) => `<a class="eco__item" href="${pUrl(r)}"><span class="thumb">${prodArt(r)}</span><span><span class="kit__role">${esc(subName(r))}</span><strong>${esc(r.name)}</strong><span class="small muted">${esc(specLine(r))}</span></span><span class="eco__plus" aria-hidden="true">+</span></a>`).join('')}</div></div>
           </div>
         </div>
@@ -572,7 +591,7 @@
     return groups.map(([k, name, cats]) => {
       const items = list.filter((p) => cats.includes(p.category));
       if (!items.length) return '';
-      return `<div class="gear-group"><div class="gear-group__head reveal"><h3>${name}</h3><a class="link-arrow" href="equipamiento/${k}${labelFor ? '?' + labelFor : ''}">Ver ${arrow}</a></div><div class="rail">${items.map(card).join('')}</div></div>`;
+      return `<div class="gear-group"><div class="gear-group__head reveal"><h3>${name}</h3><a class="link-arrow" href="equipamiento?categoria=${k}${labelFor ? '&' + labelFor : ''}">Ver ${arrow}</a></div><div class="rail">${items.map(card).join('')}</div></div>`;
     }).join('');
   }
 
@@ -717,7 +736,7 @@
       title: 'Vescora · Quiénes somos',
       description: 'VESCORA nace en la pesca y crece hacia el outdoor: equipamiento honesto y funcional para quienes encuentran su lugar fuera del camino.',
       over: true,
-      html: `${pageHero({ eyebrow: 'Vescora', title: 'Equipment for the wild', lede: 'Nacemos en la pesca. Nos mueve todo lo que ocurre fuera del camino.', scene: { scene: 'coast', id: 'about', photo: 'assets/photos/agua-salada.webp' }, crumbsHtml: crumbs([['Inicio', './'], ['Vescora']]) })}
+      html: `${pageHero({ eyebrow: 'Vescora', title: 'Equipment for the wild', lede: 'Nacemos en la pesca. Nos mueve todo lo que ocurre fuera del camino.', scene: { scene: 'coast', id: 'about', photo: 'assets/photos/journal-como-elegir-un-fluorocarbono.webp' }, crumbsHtml: crumbs([['Inicio', './'], ['Vescora']]) })}
       <section class="section">
         <div class="wrap manifesto">
           <div class="reveal">
@@ -742,7 +761,7 @@
         </div>
       </section>
       <section class="brand-band">
-        <div class="brand-band__media">${sceneMedia({ photo: 'assets/photos/journal-como-elegir-un-fluorocarbono.webp', id: 'band' }, '', 'Pescador en una barca entre la niebla de un lago')}</div>
+        <div class="brand-band__media">${sceneMedia({ photo: 'assets/photos/journal-eging-primeros-pasos.webp', id: 'band' }, '', 'Barca de pesca sobre aguas turquesa vista desde arriba')}</div>
         <div class="wrap brand-band__content"><p class="brand-band__quote">La pesca es nuestro origen. La exploración, nuestro territorio.</p></div>
       </section>
       <section class="section">
@@ -1064,6 +1083,7 @@
 
   function navigate(href, opts = {}) {
     closeAll();
+    if (typeof closeMega === 'function') closeMega();
     const u = new URL(href, document.baseURI);
     if (u.pathname === location.pathname && u.search === location.search && u.hash) {
       const t = $(u.hash);
@@ -1091,11 +1111,73 @@
   function onScroll() {
     const y = window.scrollY;
     header.classList.toggle('is-scrolled', y > 40);
-    header.classList.toggle('is-over', overHero && y < 40 && !document.body.classList.contains('is-locked'));
+    header.classList.toggle('is-over', overHero && y < 40 && !document.body.classList.contains('is-locked') && !header.classList.contains('is-mega'));
     const px = $('[data-parallax]');
     if (px && !reduced && y < window.innerHeight * 1.2) px.style.transform = `translate3d(0, ${y * 0.22}px, 0)`;
     ticking = false;
   }
+  // ——— Menú desplegable (mega menú) de Equipamiento y Técnicas y especies ———
+  // Se genera desde los datos: al añadir categorías, tipos, técnicas o especies aparecen solos.
+  const megaCol = (title, href, links) => `<div class="mega__col"><a class="mega__title" href="${href}">${esc(title)}</a>${links.map(([t, u]) => `<a href="${u}">${esc(t)}</a>`).join('')}</div>`;
+  const megaFeature = (photo, kicker, title, href, cta) => `<a class="mega__feature" href="${href}"><span class="mega__media">${photo}</span><span class="mega__kicker">${esc(kicker)}</span><span class="mega__ftitle">${esc(title)}</span><span class="link-arrow">${esc(cta)} ${arrow}</span></a>`;
+  const MEGA = {
+    equipamiento: () => {
+      const cats = D.categories.filter((c) => D.products.some((p) => p.category === c.id)).sort((a, b) => (b.highlight ? 1 : 0) - (a.highlight ? 1 : 0));
+      const cols = cats.map((c) => megaCol(c.name, `equipamiento/${c.id}`, c.sub.filter((x) => D.products.some((p) => p.category === c.id && p.sub === x.id)).map((x) => [x.name, `equipamiento/${c.id}?tipo=${x.id}`]))).join('');
+      const nw = newInProducts()[0];
+      return `<div class="mega__cols mega__cols--${cats.length}">${cols}</div>
+        <div class="mega__side">${nw ? megaFeature(prodArt(nw), 'New In', nw.name, pUrl(nw), 'Ver producto') : ''}<a class="mega__all" href="equipamiento">Todo el equipamiento ${arrow}</a></div>`;
+    },
+    [TS]: () => {
+      const byW = (items, link) => WATERS.map((w) => [w, items.filter((x) => wOf(x).includes(w.id))]).filter(([, l]) => l.length)
+        .map(([w, l]) => megaCol(w.name, `${TS}?agua=${w.q}`, l.map((x) => [x.name, link(x, w)])));
+      return `<div class="mega__group"><div class="mega__label">Técnicas</div><div class="mega__cols mega__cols--2">${byW(D.techniques, (t, w) => `tecnicas/${t.id}?agua=${w.q}`).join('')}</div></div>
+        <div class="mega__group"><div class="mega__label">Especies</div><div class="mega__cols mega__cols--2">${byW(D.species, (x) => `especies/${x.id}`).join('')}</div></div>
+        <div class="mega__side">${megaFeature(`<img src="assets/photos/ruta-tecnicas.webp" alt="" loading="lazy" decoding="async">`, 'Encuentra tu equipo', '¿No sabes qué señuelo elegir?', FINDER, 'Empezar')}<a class="mega__all" href="${TS}">Ver técnicas y especies ${arrow}</a></div>`;
+    }
+  };
+  const mega = document.createElement('div');
+  mega.className = 'mega';
+  mega.id = 'mega';
+  mega.setAttribute('aria-hidden', 'true');
+  header.appendChild(mega);
+  let megaKey = '', megaTimer;
+  function openMega(key, trigger) {
+    clearTimeout(megaTimer);
+    if (megaKey !== key) {
+      mega.innerHTML = `<div class="wrap mega__in">${MEGA[key]()}</div>`;
+      megaKey = key;
+    }
+    $$('.nav a[data-mega]').forEach((a) => a.setAttribute('aria-expanded', a === trigger));
+    header.classList.add('is-mega');
+    mega.setAttribute('aria-hidden', 'false');
+    onScroll();
+  }
+  function closeMega() {
+    clearTimeout(megaTimer);
+    header.classList.remove('is-mega');
+    mega.setAttribute('aria-hidden', 'true');
+    $$('.nav a[data-mega]').forEach((a) => a.setAttribute('aria-expanded', 'false'));
+    onScroll();
+  }
+  $$('.nav a').forEach((a) => {
+    const key = a.getAttribute('href');
+    if (!MEGA[key]) { a.addEventListener('mouseenter', () => { megaTimer = setTimeout(closeMega, 120); }); return; }
+    a.dataset.mega = key;
+    a.setAttribute('aria-haspopup', 'true');
+    a.setAttribute('aria-expanded', 'false');
+    a.setAttribute('aria-controls', 'mega');
+    a.addEventListener('mouseenter', () => { clearTimeout(megaTimer); megaTimer = setTimeout(() => openMega(key, a), 90); });
+    a.addEventListener('focus', () => openMega(key, a));
+  });
+  header.addEventListener('mouseleave', () => { clearTimeout(megaTimer); megaTimer = setTimeout(closeMega, 160); });
+  mega.addEventListener('mouseenter', () => clearTimeout(megaTimer));
+  mega.addEventListener('click', (e) => { if (e.target.closest('a')) closeMega(); });
+  $('.header__tools').addEventListener('mouseenter', () => { megaTimer = setTimeout(closeMega, 120); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && header.classList.contains('is-mega')) closeMega(); });
+  document.addEventListener('focusin', (e) => { if (header.classList.contains('is-mega') && !header.contains(e.target)) closeMega(); });
+  window.addEventListener('popstate', closeMega);
+
   window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
 
   // ——— Overlays: menú y buscador ———
