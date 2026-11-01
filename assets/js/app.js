@@ -259,9 +259,9 @@
     const featured = featuredProducts(newIn);
     const ig = [
       ['photo', 'assets/photos/journal-salir-al-amanecer-checklist.webp', 'Primera luz'],
-      ['prod', PROD['minnow-kingdom-105s-sardina-azul'], 'Minnow Kingdom 105S'],
+      ['prod', PROD['minnow-kingdom-blue-dark'], 'Minnow Kingdom Blue Dark'],
       ['photo', 'assets/photos/journal-rockfishing-equipo-basico-para-empezar.webp', 'Costa rocosa'],
-      ['prod', PROD['kit-vinilos-40'], 'Kit 40 vinilos'],
+      ['prod', PROD['kit-61-vinilos-paddle-tail'], 'Kit 61 vinilos'],
       ['photo', 'assets/photos/tecnica-fly-fishing.webp', 'Río arriba'],
       ['photo', 'assets/photos/journal-como-elegir-un-fluorocarbono.webp', 'Fuera del camino']
     ].filter(([, o]) => o);
@@ -439,6 +439,9 @@
 
   V.product = (catId, id) => {
     const p = PROD[id];
+    // Direcciones antiguas de productos renombrados.
+    const moved = !p && D.products.find((x) => (x.aliases || []).includes(id));
+    if (moved) return { redirect: pUrl(moved) };
     if (!p || p.category !== catId) return V.notFound();
     const cat = CAT[p.category];
     const crumbItems = [['Inicio', './'], ['Equipamiento', 'equipamiento'], [cat.name, `equipamiento/${cat.id}`], [p.name]];
@@ -452,7 +455,7 @@
     const whenIcons = { Condiciones: '◐', 'Tipo de agua': '≈', Profundidad: '↧', Recuperación: '↻', Escenario: '△' };
     return {
       title: `VESCORA ${p.name} · ${p.type}`,
-      description: `${p.summary} ${p.description}`.slice(0, 158),
+      description: (`${p.summary} ${p.description}`.trim() || `${p.name} · ${p.type}`).slice(0, 158),
       html: `
       <div class="wrap product">
         <div class="product__gallery">
@@ -470,7 +473,7 @@
             <h1 class="product__name" style="margin-top:16px">${esc(p.name)}</h1>
           </div>
           <dl class="quick">${quick.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
-          <div><p class="lede" style="max-width:none">${esc(p.summary)}</p><p class="muted" style="margin-top:14px">${esc(p.description)}</p></div>
+          ${p.summary || p.description ? `<div>${p.summary ? `<p class="lede" style="max-width:none">${esc(p.summary)}</p>` : ''}${p.description ? `<p class="muted" style="margin-top:14px">${esc(p.description)}</p>` : ''}</div>` : ''}
           ${family.length > 1 && p.photos ? `<div><h2 class="block-title">Versiones</h2><div class="chips">${family.map((f) => `<a class="chip ${f.id === p.id ? 'is-active' : ''}" href="${pUrl(f)}" ${f.id === p.id ? 'aria-current="page"' : ''}>${esc(f.variant || f.name)}</a>`).join('')}</div></div>` : ''}
           <div class="recommended">
             <div><h2 class="block-title">Técnicas</h2><div class="chips">${p.techniques.map((t) => `<a class="chip" href="tecnicas/${t}">${esc(TECH[t].name)}</a>`).join('')}</div></div>

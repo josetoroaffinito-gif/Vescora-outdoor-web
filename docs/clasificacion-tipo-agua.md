@@ -34,7 +34,7 @@ Para comprobar la coherencia de los datos tras cualquier cambio: `node tools/val
 ## Productos existentes
 
 ### Multiagua (`[FW, SW]`): material genérico válido en cualquier agua
-Arc 3000, Arc 2500S, Arc 1000 (carretes sellados contra la sal, válidos también en agua dulce) · Braid X8 PE 0.8, Braid X4 PE 0.3, Fluorocarbono 0,25, Mono 0,30 · Jig Head 3/7/10/21 g · Grapa rápida nº 1, Giratorio rolling nº 8 · Caja organizadora, Alicates, Mochila Coastline, Bolsa Tide, Gafas polarizadas.
+Arc 3000, Arc 2500S, Arc 1000 (carretes sellados contra la sal, válidos también en agua dulce) · Braid X8 PE 0.8, Braid X4 PE 0.3, Fluorocarbono 0,25, Mono 0,30 · Jig Head 3/7/10/21 g · Grapa rápida nº 1, Giratorio rolling nº 8 · Cajas Organizadoras (Naranja, Amarilla, Azul), Alicates, Mochila Coastline, Bolsa Tide, Gafas polarizadas.
 
 Aparecen en los dos catálogos y en "Tu equipo" de agua dulce cuando coincide la técnica. **No se les han añadido especies de agua dulce**: sus especies siguen siendo las que tenían.
 
@@ -46,8 +46,7 @@ Señuelos y una caña que se usan también en agua dulce, pero cuya ficha actual
 
 | Producto | Motivo |
 |---|---|
-| Paddle Tail 90, Slim Shad 120, Pin Tail 55 | Los vinilos se usan para black bass, lucio o trucha |
-| Minnow Kingdom 105S (6 colores) | Los minnows hundidos se usan para lucio, black bass o trucha grande |
+| Minnow Kingdom (6 colores) | Los minnows hundidos se usan para lucio, black bass o trucha grande |
 | Walker 120 | Los paseantes se usan para black bass |
 | Micro Jig 10 | Se usa para black bass y perca |
 | Vibe 70 | Los lipless se usan para black bass |
@@ -56,4 +55,4 @@ Señuelos y una caña que se usan también en agua dulce, pero cuya ficha actual
 ## Productos nuevos de agua dulce: DATOS DE EJEMPLO
 Marcados con `sample: true`. Son necesarios para que la estructura de agua dulce funcione de principio a fin. Sustituirlos por el catálogo real:
 
-Cucharilla Spin 2, Jerkbait 110SP, Craw 75, Ninfa Pheasant Tail nº 14, Mosca seca Adams nº 16, Brook 905 #5, Stream 602UL, Lakeside 702M, Carp 12 3 lb, Brook Fly 5/6, Big Pit 10000, Línea de mosca WF5F, Bajo cónico 9 ft 5X, Bajo de acero 30 cm, Mono Carp 0,35, Montaje de pelo nº 6, Boilies 20 mm.
+Cucharilla Spin 2, Ninfa Pheasant Tail nº 14, Mosca Seca Adams nº 16, Brook 905 #5, Stream 602UL, Lakeside 702M, Carp 12 3 lb, Brook Fly 5/6, Big Pit 10000, Línea de mosca WF5F, Bajo cónico 9 ft 5X, Bajo de acero 30 cm, Mono Carp 0,35, Montaje de pelo nº 6, Boilies 20 mm.

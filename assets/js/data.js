@@ -15,7 +15,11 @@
  * (ver docs/clasificacion-tipo-agua.md).
  *
  * Los productos incluidos son DATOS DE EJEMPLO: sustituir por el catálogo real.
- * Campos preparados para una futura fase ecommerce (price, sku, stock) se
+ * `sku` es el código de la empresa (o una lista, si un pack agrupa varios): solo
+ * sirve para cruzar con el inventario y nunca se muestra en la web. `id` es el
+ * identificador interno y forma la URL de la ficha: al cambiarlo, deja el anterior
+ * en `aliases` para que las direcciones antiguas sigan funcionando.
+ * Campos preparados para una futura fase ecommerce (price, stock) se
  * mantienen a null y la interfaz no los muestra mientras commerce=false.
  */
 (function () {
@@ -39,7 +43,7 @@
     //   (fecha real de incorporación al catálogo), New In pasa a mostrar automáticamente los más recientes.
     // · Productos destacados: productos con `featured: true`, en el orden del catálogo, sin repetir los de New In.
     home: {
-      newIn: ['vinilos-realistas-type-b', 'vinilos-realistas-type-a', 'kit-vinilos-40', 'crankbait-pack-5'],
+      newIn: ['pack-5-vinilos-realistas-serie-02', 'pack-5-vinilos-realistas-serie-01', 'kit-61-vinilos-paddle-tail', 'pack-5-crankbait'],
       newInMax: 4,
       featuredMax: 8
     },
@@ -429,49 +433,10 @@
   const products = [
     // ——— SEÑUELOS · VINILOS
     P({
-      id: 'paddle-tail-90', name: 'Paddle Tail 90', waterTypes: [SW], waterReview: true, category: 'senuelos', sub: 'vinilos', type: 'Soft Swimbait',
-      length: '90 mm', weight: 15,
-      summary: 'El vinilo de cola de pala que nada a cualquier velocidad.',
-      description: 'Un vinilo de perfil hidrodinámico y cola de pala que genera vibración desde la recuperación más lenta. Montado en cabeza plomada cubre la capa media del agua con un nado natural que imita a sardinas y lisas. Compuesto blando y resistente, preparado para varias capturas.',
-      specs: { Tipo: 'Vinilo · cola de pala', Longitud: '90 mm', Peso: '15 g', Acción: 'Vibración de cola y balanceo', Material: 'Compuesto TPR suave', Color: 'Sardina natural', Profundidad: '0,5 – 4 m (según cabeza)' },
-      when: { Condiciones: 'Mar en calma o ligeramente movido', 'Tipo de agua': 'Clara o ligeramente tomada', Profundidad: 'Media agua', Recuperación: 'Lineal lenta o con tirones suaves', Escenario: 'Costa rocosa, espigones y bocanas' },
-      techniques: ['spinning', 'light-spinning', 'rockfishing'], species: ['lubina', 'jurel', 'anjova', 'depredadores'],
-      conditions: ['costa-rocosa', 'espigon', 'puerto', 'estuario', 'aguas-calmas'],
-      pairs: ['jig-head-10', 'jig-head-7', 'jig-head-21'],
-      related: ['jig-head-10', 'fluoro-025', 'grapa-rapida-1', 'giratorio-rolling', 'caja-organizadora'],
-      art: { k: 'softbait', c: ['#8fa3ad', '#dfe6e6'] }, listings: { wallapop: '', vinted: '', miraanuncio: '' }
-    }),
-    P({
-      id: 'slim-shad-120', name: 'Slim Shad 120', waterTypes: [SW], waterReview: true, category: 'senuelos', sub: 'vinilos', type: 'Soft Shad',
-      length: '120 mm', weight: 22,
-      summary: 'Silueta grande para lances largos y lubinas selectivas.',
-      description: 'Shad de perfil estilizado para buscar peces grandes con mar movido. Su cola genera un balanceo amplio y su tamaño permite lanzar lejos con cabezas de 14 a 28 g.',
-      specs: { Tipo: 'Vinilo · shad', Longitud: '120 mm', Peso: '22 g', Acción: 'Balanceo amplio', Material: 'Compuesto TPR', Color: 'Lisa oscura', Profundidad: '1 – 6 m' },
-      when: { Condiciones: 'Mar movido, espuma', 'Tipo de agua': 'Tomada o con espuma', Profundidad: 'Media agua a fondo', Recuperación: 'Lineal media', Escenario: 'Playas abiertas y puntas' },
-      techniques: ['spinning', 'embarcacion'], species: ['lubina', 'anjova', 'depredadores'],
-      conditions: ['costa-rocosa', 'playa', 'embarcacion', 'oleaje'],
-      pairs: ['jig-head-21', 'jig-head-10'],
-      related: ['jig-head-21', 'fluoro-025', 'grapa-rapida-1', 'pe-x8-08'],
-      art: { k: 'shad', c: ['#4b5a52', '#c9d0c2'] }, listings: { wallapop: '', vinted: '' }
-    }),
-    P({
-      id: 'pin-tail-55', name: 'Pin Tail 55', waterTypes: [SW], waterReview: true, category: 'senuelos', sub: 'vinilos', type: 'Micro vinilo',
-      length: '55 mm', weight: 2,
-      summary: 'Pequeño y discreto, para peces que desconfían.',
-      description: 'Micro vinilo de cola fina con una vibración casi imperceptible. Pensado para light spinning y rockfishing, donde la presentación importa más que el tamaño.',
-      specs: { Tipo: 'Vinilo · pin tail', Longitud: '55 mm', Peso: '1,5 g', Acción: 'Vibración fina', Material: 'Compuesto con sal', Color: 'Glow translúcido', Profundidad: 'Según cabeza' },
-      when: { Condiciones: 'Aguas calmas, noche', 'Tipo de agua': 'Clara', Profundidad: 'Fondo y media agua', Recuperación: 'Muy lenta con caídas', Escenario: 'Puertos y escolleras' },
-      techniques: ['light-spinning', 'rockfishing'], species: ['jurel', 'depredadores', 'lubina'],
-      conditions: ['puerto', 'espigon', 'costa-rocosa', 'aguas-calmas', 'noche'],
-      pairs: ['jig-head-3', 'jig-head-7'],
-      related: ['jig-head-3', 'pe-x4-03', 'fluoro-025', 'caja-organizadora'],
-      art: { k: 'pintail', c: ['#d7c98a', '#f1ecd4'] }, listings: { vinted: '' }
-    }),
-    P({
-      id: 'kit-vinilos-40', name: 'Kit 40 Vinilos Paddle Tail + Caja', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Kit de vinilos con montaje',
+      id: 'kit-61-vinilos-paddle-tail', aliases: ['kit-vinilos-40'], name: 'Kit 61 Vinilos Paddle Tail', sku: 'VES-VIN-001', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Kit de vinilos con montaje',
       length: '7 cm', weight: 9.2,
-      photo: 'assets/photos/kit-vinilos-40-caja.webp',
-      photos: ['caja', 'rosa-cristal', 'verde-chartreuse', 'oro-olivo', 'azul-naranja'].map((v) => `assets/photos/kit-vinilos-40-${v}.webp`),
+      photo: 'assets/photos/kit-61-vinilos-paddle-tail-caja.webp',
+      photos: ['caja', 'rosa-cristal', 'verde-chartreuse', 'oro-olivo', 'azul-naranja'].map((v) => `assets/photos/kit-61-vinilos-paddle-tail-${v}.webp`),
       summary: 'Todo lo necesario para montar y pescar, en una sola caja.',
       description: 'Kit completo de 40 vinilos paddle tail en 8 colores, con 10 cabezas plomadas de 7 g, 10 grapas rápidas con giratorio y caja organizadora rígida. La cola de pala genera un nado natural desde la recuperación más lenta. Pensado para spinning en agua dulce y salada: costa, embarcación, río, lago o embalse.',
       specs: {
@@ -486,9 +451,9 @@
       art: { k: 'softbait', c: ['#e04f9a', '#f1ecd4'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
-      id: 'vinilos-realistas-type-a', name: 'Pack 5 Vinilos Realistas · Type A', family: 'vinilos-realistas', variant: 'Type A', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Vinilos armados realistas',
+      id: 'pack-5-vinilos-realistas-serie-01', aliases: ['vinilos-realistas-type-a', 'vinilos-realistas-pack-5'], name: 'Pack 5 Vinilos Realistas Serie 01', sku: 'VES-VIN-002', family: 'vinilos-realistas', variant: 'Serie 01', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Vinilos armados realistas',
       length: '7 – 9 cm', weight: 15,
-      photo: 'assets/photos/vinilos-realistas-type-a.webp',
+      photo: 'assets/photos/pack-5-vinilos-realistas-serie-01.webp',
       summary: 'Peces pasto realistas, listos para lanzar.',
       description: 'Pack de 5 vinilos realistas con acabado detallado, cabeza plomada integrada, anzuelo simple dorsal y triple ventral. Imitan peces pasto con una natación muy natural y generan fuertes vibraciones que atraen a los depredadores incluso con recuperaciones lentas. Para lubina, black bass, lucio, perca, anjova, barracuda y otros depredadores, en agua dulce y salada.',
       specs: {
@@ -499,15 +464,15 @@
       when: { Condiciones: 'Peces activos o apáticos', 'Tipo de agua': 'Dulce o salada', Profundidad: 'Media agua y fondo', Recuperación: 'Lineal lenta o a saltos por el fondo', Escenario: 'Costa, puertos, embarcación y embalses' },
       techniques: ['spinning', 'embarcacion'], species: ['lubina', 'black-bass', 'lucio', 'anjova', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'espigon', 'puerto', 'embarcacion', 'rio', 'lago', 'embalse'],
-      related: ['vinilos-realistas-type-b', 'grapa-rapida-1', 'fluoro-025', 'pe-x8-08', 'bajo-acero-30', 'ridge-902m', 'lakeside-702m'],
+      related: ['pack-5-vinilos-realistas-serie-02', 'grapa-rapida-1', 'fluoro-025', 'pe-x8-08', 'bajo-acero-30', 'ridge-902m', 'lakeside-702m'],
       art: { k: 'softbait', c: ['#2a2f33', '#d9dde2'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
-      id: 'vinilos-realistas-type-b', name: 'Pack 5 Vinilos Realistas · Type B', family: 'vinilos-realistas', variant: 'Type B', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Vinilos armados realistas',
+      id: 'pack-5-vinilos-realistas-serie-02', aliases: ['vinilos-realistas-type-b'], name: 'Pack 5 Vinilos Realistas Serie 02', sku: 'VES-VIN-003', family: 'vinilos-realistas', variant: 'Serie 02', waterTypes: [FW, SW], category: 'senuelos', sub: 'vinilos', type: 'Vinilos armados realistas',
       length: '7 – 9 cm', weight: 15,
-      photo: 'assets/photos/vinilos-realistas-type-b.webp',
+      photo: 'assets/photos/pack-5-vinilos-realistas-serie-02.webp',
       summary: 'Los mismos vinilos realistas, con cola rizada y colores nuevos.',
-      description: 'Pack de 5 vinilos realistas con acabado detallado, en una selección de colores distinta al Type A y con cola rizada (twister) para un nado más ondulante. Llevan cabeza plomada integrada, anzuelo simple dorsal y triple ventral. Imitan peces pasto con una natación muy natural y generan fuertes vibraciones que atraen a los depredadores incluso con recuperaciones lentas. Para lubina, black bass, lucio, perca, anjova, barracuda y otros depredadores, en agua dulce y salada.',
+      description: 'Pack de 5 vinilos realistas con acabado detallado, en una selección de colores distinta a la Serie 01 y con cola rizada (twister) para un nado más ondulante. Llevan cabeza plomada integrada, anzuelo simple dorsal y triple ventral. Imitan peces pasto con una natación muy natural y generan fuertes vibraciones que atraen a los depredadores incluso con recuperaciones lentas. Para lubina, black bass, lucio, perca, anjova, barracuda y otros depredadores, en agua dulce y salada.',
       specs: {
         Tipo: 'Vinilo armado · cola rizada (twister)', Contenido: '5 vinilos · 5 colores', Longitud: '7 – 9 cm', Peso: 'Desde 15 g',
         Acción: 'Nado natural y fuerte vibración', Material: 'Silicona · cabeza plomada', Anzuelos: 'Simple dorsal + triple ventral',
@@ -516,31 +481,46 @@
       when: { Condiciones: 'Peces activos o apáticos', 'Tipo de agua': 'Dulce o salada', Profundidad: 'Media agua y fondo', Recuperación: 'Lineal lenta o a saltos por el fondo', Escenario: 'Costa, puertos, embarcación y embalses' },
       techniques: ['spinning', 'embarcacion'], species: ['lubina', 'black-bass', 'lucio', 'anjova', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'espigon', 'puerto', 'embarcacion', 'rio', 'lago', 'embalse'],
-      related: ['vinilos-realistas-type-a', 'grapa-rapida-1', 'fluoro-025', 'pe-x8-08', 'bajo-acero-30', 'ridge-902m', 'lakeside-702m'],
+      related: ['pack-5-vinilos-realistas-serie-01', 'grapa-rapida-1', 'fluoro-025', 'pe-x8-08', 'bajo-acero-30', 'ridge-902m', 'lakeside-702m'],
       art: { k: 'softbait', c: ['#2f5fb0', '#e6e9ee'] }, listings: { wallapop: '', vinted: '' }
     }),
-    // ——— SEÑUELOS · MINNOWS — Minnow Kingdom 105S (6 colores, misma ficha técnica)
+    // ——— SEÑUELOS · MINNOWS — Minnow Kingdom (6 colores, misma ficha técnica)
+    // [dirección antigua, nombre del color, color en la ficha, SKU, colores de la ilustración, destacado, plataformas]
     ...[
-      ['plata-holo', 'Plata Holo', ['#9aa4b4', '#e6e9ee'], true, { wallapop: '', vinted: '', miraanuncio: '' }],
-      ['lomo-rosa', 'Lomo Rosa', ['#c2185b', '#e3e3e6'], true, { wallapop: '', vinted: '' }],
-      ['cabeza-roja', 'Cabeza Roja', ['#7c8a9a', '#e9d36a'], true, { wallapop: '', vinted: '' }],
-      ['plata-espejo', 'Plata Espejo', ['#3c4046', '#d9dde2'], true, { wallapop: '' }],
-      ['oro-rojo', 'Oro Rojo', ['#6f747a', '#b3262d'], true, { wallapop: '', vinted: '' }],
-      ['sardina-azul', 'Sardina Azul', ['#1f3f8f', '#e3e6ea'], true, { wallapop: '', vinted: '' }]
-    ].map(([slug, color, c, featured, listings]) => P({
-      id: `minnow-kingdom-105s-${slug}`, name: `Minnow Kingdom 105S ${color}`, waterTypes: [SW], waterReview: true, family: 'minnow-kingdom-105s', color,
+      ['plata-holo', 'Phantom Pearl', 'Perla', 'KNG-MIN-002', ['#9aa4b4', '#e6e9ee'], true, { wallapop: '', vinted: '' }],
+      ['lomo-rosa', 'Roseplat', 'Lomo Rosa', 'KNG-MIN-003', ['#c2185b', '#e3e3e6'], true, { wallapop: '', vinted: '' }],
+      ['cabeza-roja', 'Rainbow', 'Arcoíris', 'KNG-MIN-006', ['#7c8a9a', '#e9d36a'], true, { wallapop: '', vinted: '' }],
+      ['plata-espejo', 'Black Face', 'Plateado', 'KNG-MIN-001', ['#3c4046', '#d9dde2'], true, { wallapop: '', vinted: '' }],
+      ['oro-rojo', 'Gold Red', 'Oro Rojo', 'KNG-MIN-004', ['#6f747a', '#b3262d'], true, { wallapop: '', vinted: '' }],
+      ['sardina-azul', 'Blue Dark', 'Azul', 'KNG-MIN-005', ['#1f3f8f', '#e3e6ea'], true, { wallapop: '', vinted: '' }]
+    ].map(([was, color, specColor, sku, c, featured, listings]) => P({
+      id: `minnow-kingdom-${color.toLowerCase().replace(/\s+/g, '-')}`, aliases: [`minnow-kingdom-105s-${was}`], name: `Minnow Kingdom ${color}`, sku, waterTypes: [SW], waterReview: true, family: 'minnow-kingdom', color,
       category: 'senuelos', sub: 'minnows', type: 'Minnow Kingdom hundido',
       length: '10,5 cm', weight: 18.6, featured,
-      photo: `assets/photos/minnow-kingdom-105s-${slug}.webp`,
+      photo: `assets/photos/minnow-kingdom-${color.toLowerCase().replace(/\s+/g, '-')}.webp`,
       summary: 'Compacto, pesado y fácil de lanzar contra el viento.',
       description: 'Minnow hundido de perfil compacto. Alcanza distancia con viento de cara y permite contar la caída para pescar a distintas profundidades.',
-      specs: { Tipo: 'Minnow Kingdom hundido', Longitud: '10,5 cm', Peso: '18,6 g', Acción: 'Rolling cerrado', Material: 'ABS · anillas inox', Color: color, Profundidad: '0,5 – 3 m' },
+      specs: { Tipo: 'Minnow Kingdom hundido', Longitud: '10,5 cm', Peso: '18,6 g', Acción: 'Rolling cerrado', Material: 'ABS · anillas inox', Color: specColor, Profundidad: '0,5 – 3 m' },
       when: { Condiciones: 'Viento, distancia', 'Tipo de agua': 'Clara o movida', Profundidad: 'Media agua', Recuperación: 'Lineal o con paradas', Escenario: 'Puntas, playas, embarcación' },
       techniques: ['spinning', 'embarcacion'], species: ['lubina', 'anjova', 'jurel', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'embarcacion', 'oleaje'],
       related: ['grapa-rapida-1', 'fluoro-025', 'giratorio-rolling', 'pe-x8-08', 'alicates-alu'],
       art: { k: 'minnow', c }, listings
     })),
+    // Un SKU por cada señuelo del pack. Pendiente de fotografía real.
+    P({
+      id: 'pack-5-minnow-flasher', name: 'Pack 5 Minnow Flasher', sku: ['VES-MIN-001', 'VES-MIN-002', 'VES-MIN-003', 'VES-MIN-004', 'VES-MIN-005'],
+      waterTypes: [FW, SW], category: 'senuelos', sub: 'minnows', type: 'Minnow Flasher',
+      length: '11 cm', weight: 18.6,
+      summary: 'Cinco colores con destello para lanzar lejos, en agua dulce y salada.',
+      description: 'Pack de 5 minnows de 11 cm y 18,6 g en cinco colores: verde lima, cabeza roja, amarillo lima, plateado y dorado brillante. Su nado en rolling cerrado genera destellos que llaman la atención de los depredadores, y su peso permite lanzar lejos incluso con viento. Trabaja entre 0,5 y 3 m con recuperación lineal o con paradas.',
+      specs: { Tipo: 'Minnow Flasher', Longitud: '11 cm', Peso: '18,6 g', Acción: 'Rolling cerrado', Material: 'ABS · anillas inox', Color: 'Verde lima, Cabeza roja, Amarillo lima, Plateado, Dorado brillante', Profundidad: '0,5 – 3 m' },
+      when: { Condiciones: 'Viento, distancia', 'Tipo de agua': 'Clara o movida', Profundidad: 'Media agua', Recuperación: 'Lineal o con paradas', Escenario: 'Puntas, playas, embarcación' },
+      techniques: ['spinning', 'embarcacion'], species: ['lubina', 'anjova', 'lucio', 'black-bass', 'depredadores'],
+      conditions: ['costa-rocosa', 'playa', 'embarcacion', 'oleaje', 'rio', 'lago', 'embalse'],
+      related: ['grapa-rapida-1', 'fluoro-025', 'giratorio-rolling', 'pe-x8-08', 'alicates-alu'],
+      art: { k: 'minnow', c: ['#7cb342', '#e6e9ee'] }, listings: { wallapop: '', vinted: '' }
+    }),
     // ——— SEÑUELOS · PASEANTES
     P({
       id: 'walker-120', name: 'Walker 120', waterTypes: [SW], waterReview: true, category: 'senuelos', sub: 'paseantes', type: 'Paseante de superficie',
@@ -656,16 +636,16 @@
     }),
 
     P({
-      id: 'crankbait-pack-5', name: 'Crankbait Pack 5', waterTypes: [FW, SW], category: 'senuelos', sub: 'otros', type: 'Pack de 5 crankbaits',
+      id: 'pack-5-crankbait', aliases: ['crankbait-pack-5'], name: 'Pack 5 CrankBait', sku: 'VES-CRB-001', waterTypes: [FW, SW], category: 'senuelos', sub: 'otros', type: 'Pack de 5 crankbaits',
       length: '10 cm', weight: 13.6,
-      photo: 'assets/photos/crankbait-pack-5.webp',
+      photo: 'assets/photos/pack-5-crankbait.webp',
       summary: 'Cinco colores, un kit listo para pescar.',
       description: 'Pack de 5 crankbaits VESCORA en colores distintos para adaptarse al agua, la luz y la actividad de los peces. Babero que lo hace trabajar entre 0,5 y 1,5 m, con un nado de gran movimiento y vibración. Ideal para black bass, lucio, lucioperca y otros depredadores, tanto para quien empieza como para pescadores con experiencia.',
       specs: { Tipo: 'Crankbait', Longitud: '10 cm', Peso: '13,6 g', Acción: 'Gran movimiento y vibración', Material: 'ABS · babero de policarbonato', Anzuelos: 'Triples nº 6', Color: '5 colores surtidos', Profundidad: '0,5 – 1,5 m', Unidades: '5' },
       when: { Condiciones: 'Peces activos, agua tomada o con viento', 'Tipo de agua': 'Dulce o salada', Profundidad: '0,5 – 1,5 m', Recuperación: 'Lineal, chocando con piedras y estructura', Escenario: 'Embalses, lagos y ríos' },
       techniques: ['spinning'], species: ['black-bass', 'lucio', 'depredadores'],
       conditions: ['embalse', 'lago', 'rio'],
-      related: ['grapa-rapida-1', 'fluoro-025', 'bajo-acero-30', 'lakeside-702m', 'caja-organizadora'],
+      related: ['grapa-rapida-1', 'fluoro-025', 'bajo-acero-30', 'lakeside-702m', 'caja-organizadora-naranja'],
       art: { k: 'minnow', c: ['#1b1d1e', '#d9d24a'] }, listings: { wallapop: '', vinted: '' }
     }),
     // ——— CAÑAS
@@ -678,7 +658,7 @@
       when: { Condiciones: 'Costa abierta, viento moderado', 'Tipo de agua': 'Cualquiera', Profundidad: 'Superficie a media agua', Recuperación: 'Lineal y jerking', Escenario: 'Costa rocosa y playas' },
       techniques: ['spinning'], species: ['lubina', 'anjova', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'espigon', 'oleaje'],
-      related: ['arc-3000', 'pe-x8-08', 'fluoro-025', 'minnow-kingdom-105s-plata-holo'],
+      related: ['arc-3000', 'pe-x8-08', 'fluoro-025', 'minnow-kingdom-phantom-pearl'],
       art: { k: 'rod', c: ['#2c3230', '#8b6d4c'] }, listings: { wallapop: '' }
     }),
     P({
@@ -690,7 +670,7 @@
       when: { Condiciones: 'Aguas abrigadas', 'Tipo de agua': 'Clara', Profundidad: 'Media agua', Recuperación: 'Lenta, tirones finos', Escenario: 'Puertos y espigones' },
       techniques: ['light-spinning'], species: ['jurel', 'depredadores', 'lubina', 'dorada'],
       conditions: ['puerto', 'espigon', 'costa-rocosa'],
-      related: ['arc-2500s', 'pe-x4-03', 'fluoro-025', 'paddle-tail-90'],
+      related: ['arc-2500s', 'pe-x4-03', 'fluoro-025'],
       art: { k: 'rod', c: ['#3b4336', '#c9b28c'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
@@ -702,7 +682,7 @@
       when: { Condiciones: 'Mar en calma', 'Tipo de agua': 'Clara', Profundidad: 'Fondo', Recuperación: 'Caídas y arrastres', Escenario: 'Escolleras y pozas' },
       techniques: ['rockfishing'], species: ['depredadores', 'jurel'],
       conditions: ['costa-rocosa', 'espigon', 'puerto'],
-      related: ['arc-1000', 'pe-x4-03', 'jig-head-3', 'pin-tail-55'],
+      related: ['arc-1000', 'pe-x4-03', 'jig-head-3'],
       art: { k: 'rod', c: ['#2a2f33', '#a58a62'] }, listings: { vinted: '' }
     }),
     P({
@@ -826,7 +806,7 @@
       when: { Condiciones: 'Agua clara', 'Tipo de agua': 'Salada', Profundidad: '—', Recuperación: '—', Escenario: 'Bajo para spinning, LRF y eging' },
       techniques: ['spinning', 'light-spinning', 'rockfishing', 'eging'], species: ['lubina', 'jurel', 'calamar', 'anjova', 'depredadores'],
       conditions: ['costa-rocosa', 'puerto', 'espigon', 'playa'],
-      related: ['pe-x8-08', 'grapa-rapida-1', 'paddle-tail-90'],
+      related: ['pe-x8-08', 'grapa-rapida-1'],
       art: { k: 'spool', c: ['#c9d7de', '#5d7282'], clear: true }, listings: { wallapop: '', vinted: '' }
     }),
     P({
@@ -863,7 +843,7 @@
       specs: { Tipo: 'Cabeza redonda', Peso: '3 g', Anzuelo: 'nº 6', Material: 'Plomo · acero al carbono', Color: 'Natural' },
       techniques: ['rockfishing', 'light-spinning'], species: ['jurel', 'depredadores'],
       conditions: ['costa-rocosa', 'puerto', 'espigon'],
-      related: ['pin-tail-55', 'pe-x4-03'],
+      related: ['pe-x4-03'],
       art: { k: 'jighead', c: ['#6c6e70', '#b9bcbc'], small: true }, listings: { vinted: '' }
     }),
     P({
@@ -874,18 +854,18 @@
       specs: { Tipo: 'Cabeza con quilla', Peso: '7 g', Anzuelo: '1/0', Material: 'Plomo · acero al carbono', Color: 'Plata' },
       techniques: ['light-spinning', 'spinning', 'rockfishing'], species: ['lubina', 'jurel', 'depredadores'],
       conditions: ['puerto', 'espigon', 'costa-rocosa'],
-      related: ['paddle-tail-90', 'pin-tail-55', 'fluoro-025'],
+      related: ['fluoro-025'],
       art: { k: 'jighead', c: ['#7b8084', '#d0d4d4'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
       id: 'jig-head-10', name: 'Jig Head 10 g', waterTypes: [FW, SW], category: 'accesorios', sub: 'cabezas-plomadas', type: 'Cabeza plomada',
       length: 'Anzuelo 2/0', weight: 10,
-      summary: 'La cabeza de referencia para el Paddle Tail 90.',
+      summary: 'La cabeza de referencia para vinilos de 80 a 100 mm.',
       description: 'Cabeza plomada con anzuelo 2/0 y retenedor de vinilo. Equilibrio perfecto para vinilos de 80 a 100 mm en spinning costero.',
       specs: { Tipo: 'Cabeza con retenedor', Peso: '10 g', Anzuelo: '2/0', Material: 'Plomo · acero al carbono', Color: 'Plata' },
       techniques: ['spinning', 'light-spinning'], species: ['lubina', 'anjova', 'jurel', 'depredadores'],
       conditions: ['costa-rocosa', 'espigon', 'puerto', 'estuario'],
-      related: ['paddle-tail-90', 'fluoro-025', 'grapa-rapida-1'],
+      related: ['fluoro-025', 'grapa-rapida-1'],
       art: { k: 'jighead', c: ['#6f7478', '#c7cbcc'], large: true }, listings: { wallapop: '', vinted: '' }
     }),
     P({
@@ -896,7 +876,7 @@
       specs: { Tipo: 'Cabeza pez', Peso: '21 g', Anzuelo: '4/0', Material: 'Plomo · acero al carbono', Color: 'Plata' },
       techniques: ['spinning', 'embarcacion'], species: ['lubina', 'anjova', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'embarcacion', 'oleaje'],
-      related: ['slim-shad-120', 'fluoro-025'],
+      related: ['fluoro-025'],
       art: { k: 'jighead', c: ['#62676b', '#b4b9ba'], large: true }, listings: { wallapop: '' }
     }),
     P({
@@ -907,7 +887,7 @@
       specs: { Tipo: 'Grapa rápida', Talla: 'nº 1', Resistencia: '15 kg', Material: 'Acero inoxidable', Unidades: '10' },
       techniques: ['spinning', 'light-spinning', 'eging', 'embarcacion'], species: ['lubina', 'anjova', 'jurel', 'calamar', 'depredadores'],
       conditions: ['costa-rocosa', 'playa', 'puerto', 'espigon', 'embarcacion'],
-      related: ['fluoro-025', 'giratorio-rolling', 'caja-organizadora'],
+      related: ['fluoro-025', 'giratorio-rolling', 'caja-organizadora-naranja'],
       art: { k: 'snap', c: ['#a9b0b4', '#4a5054'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
@@ -933,15 +913,37 @@
       art: { k: 'hook', c: ['#2c2f31', '#6c7276'] }, listings: { vinted: '' }
     }),
     P({
-      id: 'caja-organizadora', name: 'Caja Organizadora 3600', waterTypes: [FW, SW], category: 'accesorios', sub: 'cajas', type: 'Caja de señuelos',
+      id: 'caja-organizadora-naranja', aliases: ['caja-organizadora'], name: 'Caja Organizadora Naranja', sku: 'VES-CAJ-001', waterTypes: [FW, SW], category: 'accesorios', sub: 'cajas', type: 'Caja de señuelos',
       length: '36 × 22 × 5 cm', weight: null,
       summary: 'Todo en su sitio, todo a mano.',
       description: 'Caja estanca con separadores ajustables para minnows, vinilos y accesorios. Cierres firmes y junta de goma.',
-      specs: { Tipo: 'Caja estanca', Medidas: '36 × 22 × 5 cm', Compartimentos: 'Hasta 18', Material: 'Polipropileno', Color: 'Transparente / grafito' },
+      specs: { Tipo: 'Caja estanca', Medidas: '36 × 22 × 5 cm', Compartimentos: 'Hasta 18', Material: 'Polipropileno', Color: 'Naranja' },
       techniques: ['spinning', 'light-spinning', 'rockfishing', 'eging'], species: [],
       conditions: [],
       related: ['bolsa-tide', 'mochila-coastline', 'grapa-rapida-1'],
-      art: { k: 'box', c: ['#d8dcd6', '#3a3f3c'] }, listings: { wallapop: '', vinted: '' }
+      art: { k: 'box', c: ['#e8843f', '#3a3f3c'] }, listings: { wallapop: '', vinted: '' }
+    }),
+    P({
+      id: 'caja-organizadora-amarilla', name: 'Caja Organizadora Amarilla', sku: 'VES-CAJ-002', waterTypes: [FW, SW], category: 'accesorios', sub: 'cajas', type: 'Caja de señuelos',
+      length: '36 × 22 × 5 cm', weight: null,
+      summary: 'Todo en su sitio, todo a mano.',
+      description: 'Caja estanca con separadores ajustables para minnows, vinilos y accesorios. Cierres firmes y junta de goma.',
+      specs: { Tipo: 'Caja estanca', Medidas: '36 × 22 × 5 cm', Compartimentos: 'Hasta 18', Material: 'Polipropileno', Color: 'Amarillo' },
+      techniques: ['spinning', 'light-spinning', 'rockfishing', 'eging'], species: [],
+      conditions: [],
+      related: ['bolsa-tide', 'mochila-coastline', 'grapa-rapida-1'],
+      art: { k: 'box', c: ['#e9c33f', '#3a3f3c'] }, listings: { wallapop: '', vinted: '' }
+    }),
+    P({
+      id: 'caja-organizadora-azul', name: 'Caja Organizadora Azul', sku: 'VES-CAJ-003', waterTypes: [FW, SW], category: 'accesorios', sub: 'cajas', type: 'Caja de señuelos',
+      length: '36 × 22 × 5 cm', weight: null,
+      summary: 'Todo en su sitio, todo a mano.',
+      description: 'Caja estanca con separadores ajustables para minnows, vinilos y accesorios. Cierres firmes y junta de goma.',
+      specs: { Tipo: 'Caja estanca', Medidas: '36 × 22 × 5 cm', Compartimentos: 'Hasta 18', Material: 'Polipropileno', Color: 'Azul' },
+      techniques: ['spinning', 'light-spinning', 'rockfishing', 'eging'], species: [],
+      conditions: [],
+      related: ['bolsa-tide', 'mochila-coastline', 'grapa-rapida-1'],
+      art: { k: 'box', c: ['#3f74b5', '#3a3f3c'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
       id: 'alicates-alu', name: 'Alicates de Aluminio', waterTypes: [FW, SW], category: 'accesorios', sub: 'herramientas', type: 'Alicates',
@@ -951,7 +953,7 @@
       specs: { Tipo: 'Alicates multifunción', Longitud: '17 cm', Material: 'Aluminio · acero inox', Incluye: 'Funda y cordón', Color: 'Verde bosque' },
       techniques: ['spinning', 'light-spinning', 'rockfishing', 'embarcacion', 'surfcasting'], species: [],
       conditions: [],
-      related: ['caja-organizadora', 'mochila-coastline'],
+      related: ['caja-organizadora-naranja', 'mochila-coastline'],
       art: { k: 'pliers', c: ['#34473a', '#b9bdb8'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
@@ -962,7 +964,7 @@
       specs: { Tipo: 'Mochila', Capacidad: '22 L', Material: 'Nylon 420D recubierto', Incluye: 'Porta cañas · bolsillo para cajas', Color: 'Verde oliva' },
       techniques: ['spinning', 'rockfishing', 'light-spinning', 'eging'], species: [],
       conditions: ['costa-rocosa'],
-      related: ['caja-organizadora', 'bolsa-tide', 'alicates-alu'],
+      related: ['caja-organizadora-naranja', 'bolsa-tide', 'alicates-alu'],
       art: { k: 'backpack', c: ['#4b5236', '#2b2e30'] }, listings: { wallapop: '', vinted: '' }
     }),
     P({
@@ -973,7 +975,7 @@
       specs: { Tipo: 'Bolsa de hombro', Capacidad: '8 L', Material: 'Poliéster 600D', Incluye: 'Porta alicates', Color: 'Beige' },
       techniques: ['spinning', 'light-spinning', 'eging', 'rockfishing'], species: [],
       conditions: [],
-      related: ['caja-organizadora', 'alicates-alu'],
+      related: ['caja-organizadora-naranja', 'alicates-alu'],
       art: { k: 'bag', c: ['#bba98a', '#3a3f3c'] }, listings: { vinted: '' }
     }),
     P({
@@ -1000,30 +1002,6 @@
       conditions: ['rio', 'arroyo', 'embalse', 'lago', 'corriente'],
       related: ['fluoro-025', 'grapa-rapida-1', 'stream-602ul'],
       art: { k: 'spoon', c: ['#c9cdd0', '#6c7276'] }
-    }),
-    P({
-      id: 'jerk-110sp', name: 'Jerkbait 110SP', waterTypes: [FW], sample: true, category: 'senuelos', sub: 'minnows', type: 'Jerkbait suspending',
-      length: '110 mm', weight: 15,
-      summary: 'Pausas largas que provocan ataques.',
-      description: 'Jerkbait de flotabilidad neutra que queda suspendido en las pausas. Tirones de puntera y paradas para lucios y black bass.',
-      specs: { Tipo: 'Jerkbait suspending', Longitud: '110 mm', Peso: '15 g', Acción: 'Darting', Material: 'ABS', Color: 'Perca', Profundidad: '1 – 1,8 m' },
-      when: { Condiciones: 'Agua fría o peces apáticos', 'Tipo de agua': 'Dulce', Profundidad: 'Media agua', Recuperación: 'Tirones y pausas', Escenario: 'Embalses y lagos' },
-      techniques: ['spinning'], species: ['lucio', 'black-bass'],
-      conditions: ['embalse', 'lago', 'rio'],
-      related: ['bajo-acero-30', 'grapa-rapida-1', 'lakeside-702m'],
-      art: { k: 'minnow', c: ['#4f6b2f', '#e9e2c4'], stripes: true }
-    }),
-    P({
-      id: 'texas-craw-75', name: 'Craw 75', waterTypes: [FW], sample: true, category: 'senuelos', sub: 'vinilos', type: 'Vinilo cangrejo',
-      length: '75 mm', weight: 7,
-      summary: 'Imitación de cangrejo para el fondo.',
-      description: 'Vinilo con forma de cangrejo para montar en texas o con cabeza plomada y arrastrar por el fondo entre piedras y troncos.',
-      specs: { Tipo: 'Vinilo · cangrejo', Longitud: '75 mm', Peso: '7 g (montado)', Acción: 'Pinzas con movimiento', Material: 'Compuesto TPR', Color: 'Verde calabaza' },
-      when: { Condiciones: 'Peces pegados al fondo', 'Tipo de agua': 'Dulce', Profundidad: 'Fondo', Recuperación: 'Arrastre y saltos', Escenario: 'Embalses con piedra y estructura' },
-      techniques: ['spinning'], species: ['black-bass'],
-      conditions: ['embalse', 'lago'],
-      related: ['fluoro-025', 'lakeside-702m'],
-      art: { k: 'pintail', c: ['#5b5a2e', '#a49a5c'] }
     }),
     P({
       id: 'ninfa-pheasant-14', name: 'Ninfa Pheasant Tail nº 14', waterTypes: [FW], sample: true, category: 'senuelos', sub: 'moscas', type: 'Ninfa',
@@ -1079,7 +1057,7 @@
       specs: { Tipo: 'Spinning', Longitud: '2,13 m · 2 tramos', 'Acción de lance': '7 – 28 g', Acción: 'Rápida', Material: 'Carbono', 'Línea recomendada': 'PE 0.8 – 1.2' },
       techniques: ['spinning'], species: ['black-bass', 'lucio'],
       conditions: ['embalse', 'lago', 'rio'],
-      related: ['arc-3000', 'jerk-110sp', 'texas-craw-75'],
+      related: ['arc-3000'],
       art: { k: 'rod', c: ['#263036', '#6f7a63'] }
     }),
     P({
@@ -1145,7 +1123,7 @@
       specs: { Tipo: 'Acero trenzado', Longitud: '30 cm', Resistencia: '15 kg', Unidades: '2' },
       techniques: ['spinning'], species: ['lucio'],
       conditions: [],
-      related: ['jerk-110sp', 'lakeside-702m'],
+      related: ['lakeside-702m'],
       art: { k: 'snap', c: ['#8a9196', '#3c4246'] }
     }),
     P({
@@ -1187,7 +1165,7 @@
     {
       slug: 'como-elegir-un-vinilo-para-lubina', photo: 'assets/photos/journal-como-elegir-un-vinilo-para-lubina.jpg', title: 'Cómo elegir un vinilo para lubina', cat: 'Guías de pesca', read: 5, scene: 'coast',
       excerpt: 'Tamaño, cola y cabeza plomada: tres decisiones que cambian el nado y el resultado.',
-      techniques: ['spinning'], species: ['lubina'], products: ['paddle-tail-90', 'slim-shad-120', 'jig-head-10'],
+      techniques: ['spinning'], species: ['lubina'], products: ['jig-head-10'],
       body: [
         ['p', 'Un vinilo es probablemente el señuelo más versátil que puedes llevar en la caja. Pero no todos nadan igual, ni sirven para lo mismo. Antes de elegir, piensa en tres cosas: dónde vas a pescar, a qué profundidad está el pez y qué está comiendo.'],
         ['h', '1. El tamaño'],
@@ -1202,7 +1180,7 @@
     {
       slug: 'spinning-desde-costa-equipamiento-basico', photo: 'assets/photos/journal-spinning-desde-costa-equipamiento-basico.webp', title: 'Spinning desde costa: equipamiento básico', cat: 'Equipamiento', read: 6, scene: 'rock',
       excerpt: 'Caña, carrete, línea y cinco señuelos para empezar sin llenar la mochila.',
-      techniques: ['spinning'], species: ['lubina', 'anjova'], products: ['ridge-902m', 'arc-3000', 'pe-x8-08', 'fluoro-025', 'minnow-kingdom-105s-plata-holo'],
+      techniques: ['spinning'], species: ['lubina', 'anjova'], products: ['ridge-902m', 'arc-3000', 'pe-x8-08', 'fluoro-025', 'minnow-kingdom-phantom-pearl'],
       body: [
         ['p', 'Empezar en el spinning no requiere un gran equipo, sino un equipo bien equilibrado. Estas son las piezas básicas.'],
         ['h', 'La caña'],
@@ -1218,7 +1196,7 @@
     {
       slug: 'que-gramaje-utilizar-segun-las-condiciones', photo: 'assets/photos/journal-que-gramaje-utilizar-segun-las-condiciones.webp', title: 'Qué gramaje utilizar según las condiciones', cat: 'Consejos', read: 4, scene: 'harbor',
       excerpt: 'Viento, oleaje, corriente y profundidad. Cómo ajustar el peso de tu señuelo.',
-      techniques: ['spinning', 'light-spinning'], species: [], products: ['jig-head-7', 'jig-head-10', 'jig-head-21', 'minnow-kingdom-105s-sardina-azul'],
+      techniques: ['spinning', 'light-spinning'], species: [], products: ['jig-head-7', 'jig-head-10', 'jig-head-21', 'minnow-kingdom-blue-dark'],
       body: [
         ['p', 'El gramaje correcto es el que te permite llegar a la zona de pesca y mantener el señuelo en la capa de agua donde está el pez. Ni más, ni menos.'],
         ['h', 'Viento'],
@@ -1246,7 +1224,7 @@
     {
       slug: 'rockfishing-equipo-basico-para-empezar', photo: 'assets/photos/journal-rockfishing-equipo-basico-para-empezar.webp', title: 'Rockfishing: equipo básico para empezar', cat: 'Técnicas', read: 5, scene: 'rock',
       excerpt: 'Una caña ligera, un carrete pequeño y una caja de micro vinilos.',
-      techniques: ['rockfishing'], species: ['depredadores'], products: ['rockline-742ul', 'arc-1000', 'pe-x4-03', 'pin-tail-55', 'jig-head-3'],
+      techniques: ['rockfishing'], species: ['depredadores'], products: ['rockline-742ul', 'arc-1000', 'pe-x4-03', 'jig-head-3'],
       body: [
         ['p', 'El rockfishing es pesca de precisión: pocos gramos, líneas finas y mucha atención a lo que transmite la puntera.'],
         ['h', 'El equipo'],
@@ -1274,7 +1252,7 @@
     {
       slug: 'salir-al-amanecer-checklist', photo: 'assets/photos/journal-salir-al-amanecer-checklist.webp', title: 'Salir al amanecer: lo que no puede faltar', cat: 'Outdoor', read: 3, scene: 'dawn',
       excerpt: 'Una lista breve para salir ligero y volver con todo.',
-      techniques: [], species: [], products: ['mochila-coastline', 'gafas-polarizadas', 'alicates-alu', 'caja-organizadora'],
+      techniques: [], species: [], products: ['mochila-coastline', 'gafas-polarizadas', 'alicates-alu', 'caja-organizadora-naranja'],
       body: [
         ['p', 'Las mejores horas suelen ser también las más frías y oscuras. Preparar la mochila la noche anterior es parte de la jornada.'],
         ['ul', ['Frontal con luz roja.', 'Gafas polarizadas.', 'Alicates y cortahilos.', 'Una caja pequeña con los señuelos del día.', 'Capa cortavientos.', 'Agua y algo de comer.', 'Móvil en bolsa estanca.']],

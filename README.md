@@ -68,8 +68,9 @@ Todo está en `assets/js/data.js`.
 
 - **Productos de ejemplo.** Los productos, medidas y especificaciones actuales son de muestra: sustitúyelos por el catálogo real.
 - **Relaciones.** Cada producto declara `techniques`, `species` y `conditions`. Con eso aparece automáticamente en su técnica, su especie, el buscador y "Tu equipo". `related` construye el bloque *También puedes necesitar* y `pairs` indica las cabezas plomadas compatibles con un vinilo.
+- **SKU.** `sku` es el código de la empresa para cruzar con el inventario (una lista si un pack agrupa varios). No se muestra en la web. `id` es el identificador interno que forma la URL de la ficha.
 - **Dónde comprar.** `listings: { wallapop: 'URL del anuncio', vinted: '' }`. Solo aparece un botón por cada plataforma incluida. Si el enlace está vacío se usa el perfil definido en `site.platforms`. Si una plataforma no aparece en `listings`, no se muestra su botón.
-- **Fotografía real.** Añade `photo: 'assets/photos/paddle-tail-90.avif'` a un producto, técnica, especie, categoría o artículo y sustituirá a la ilustración (con `loading="lazy"`). Formatos recomendados: AVIF o WebP.
+- **Fotografía real.** Añade `photo: 'assets/photos/mi-producto.avif'` a un producto, técnica, especie, categoría o artículo y sustituirá a la ilustración (con `loading="lazy"`). Formatos recomendados: AVIF o WebP.
 - **Contacto y redes.** `site.email`, `site.instagram`, `site.whatsapp` (vacío = oculto).
 - **Datos legales.** `site.legal`: razón social, CIF/NIF, dirección, email, teléfono, responsable y dominio. Hasta completarlos aparecen resaltados entre corchetes (p. ej. `[RAZÓN SOCIAL]`) en las páginas legales. Los textos legales son una base orientativa y conviene que los revise una asesoría.
 - **Sitemap.** Después de cambiar datos, ejecuta `node tools/build-sitemap.mjs`.

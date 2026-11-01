@@ -1,6 +1,6 @@
 // Valida la coherencia de assets/js/data.js: node tools/validate-data.mjs
 // Comprueba ids únicos, referencias válidas y compatibilidad de tipo de agua entre entidades.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const ctx = { window: {} };
@@ -47,6 +47,14 @@ D.products.forEach((p) => {
   if (p.waterReview) warnings.push(`revisar tipo de agua: ${p.id}`);
 });
 D.journal.forEach((a) => (a.products || []).forEach((r) => P.has(r) || errors.push(`journal ${a.slug}: producto inexistente "${r}"`)));
+// Direcciones antiguas: no pueden coincidir con otro producto ni repetirse.
+const aliases = new Set();
+D.products.forEach((p) => (p.aliases || []).forEach((a) => { if (P.has(a) || aliases.has(a)) errors.push(`alias en conflicto "${a}" en ${p.id}`); aliases.add(a); }));
+// Las fotos de producto deben existir.
+D.products.forEach((p) => [p.photo, ...(p.photos || [])].filter(Boolean).forEach((f) => existsSync(new URL('../' + f, import.meta.url)) || errors.push(`producto ${p.id}: falta la foto ${f}`)));
+// SKU de empresa: opcional, pero sin repetir (un pack puede agrupar varios).
+const skus = new Map();
+D.products.forEach((p) => [].concat(p.sku || []).forEach((k) => (skus.has(k) ? errors.push(`SKU duplicado "${k}": ${skus.get(k)} y ${p.id}`) : skus.set(k, p.id))));
 // Portada: la selección de New In debe apuntar a productos existentes.
 ((D.site.home && D.site.home.newIn) || []).forEach((id) => P.has(id) || errors.push(`portada: New In apunta a un producto inexistente "${id}"`));
 if (!D.products.some((p) => p.featured)) warnings.push('portada: ningún producto tiene featured: true (Productos destacados quedará vacío)');
