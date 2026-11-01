@@ -1186,7 +1186,7 @@
   menu.setAttribute('aria-hidden', 'true'); srch.setAttribute('aria-hidden', 'true');
   const closeBtn = (label) => `<button class="icon-btn" type="button" data-close aria-label="Cerrar ${label}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></button>`;
   const catsMenu = D.categories.slice().sort((x, y) => (y.highlight ? 1 : 0) - (x.highlight ? 1 : 0));
-  menu.innerHTML = `<div class="wrap"><div class="menu__top"><a class="brand" href="./"><span class="brand__emblem" aria-hidden="true"></span><span class="brand__word">VESCORA</span></a>${closeBtn('menú')}</div>
+  menu.innerHTML = `<div class="wrap"><div class="menu__top"><a class="brand" href="./" aria-label="VESCORA, inicio"><span class="brand__logo" aria-hidden="true"></span></a>${closeBtn('menú')}</div>
     <div class="menu__grid">
       <nav class="menu__main" aria-label="Menú principal">${NAV.map(([t, u], i) => `<a href="${u}"><small>0${i + 1}</small>${t}</a>`).join('')}</nav>
       <div class="menu__cols">

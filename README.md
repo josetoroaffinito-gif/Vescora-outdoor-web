@@ -22,7 +22,7 @@ Abre http://localhost:4173. No hay dependencias ni paso de build.
 | `assets/js/app.js` | Router con URLs amigables, vistas, buscador, recomendador "Encuentra tu equipo", SEO por ruta |
 | `assets/js/art.js` | Ilustraciones SVG provisionales (paisajes y producto) |
 | `assets/css/styles.css` | Sistema visual (tokens de color, tipografía, componentes) |
-| `assets/brand/` | Logotipos originales · `assets/img/` emblema recoloreable (máscara) |
+| `assets/brand/` | Identidad VESCORA Outdoor: logotipos `horizontal/`, `vertical/`, `compacta/`, `favicon/` (9 variantes de color, SVG y PNG) y `pdf/`. `logo-horizontal.svg` y `logo-compacto.svg` son las versiones web (sin fondo, se usan como máscara y toman el color del texto) |
 | `404.html`, `_redirects` | Soporte de URLs amigables en GitHub Pages / Netlify |
 | `tools/build-sitemap.mjs` | Regenera `sitemap.xml` desde los datos |
 | `tools/validate-data.mjs` | Comprueba la coherencia de los datos |
